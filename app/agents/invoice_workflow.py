@@ -43,6 +43,9 @@ class InvoiceWorkflow(Workflow):
                 "repayment_capacity": None,
                 "payment_decision": None,
                 "payment_proposal": None,
+                "confirmed_supplier_offer": None,
+                "simulated_payment_receipt": None,
+                "repayment_monitoring": None,
             }
             message = result.message
             if result.intake_id:

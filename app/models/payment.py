@@ -30,3 +30,4 @@ class SimulatedPayment(BaseModel):
     proposal_id: str
     status: Literal["SIMULATED_PAID"]
     installments_paise: list[int]
+    scheduled_from: date | None = None

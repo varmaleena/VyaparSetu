@@ -11,6 +11,7 @@ from google.adk.workflow import Workflow
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.concurrency import run_in_threadpool
 
+from app.agents.playground_payment_review import OFFER
 from app.agents.tool_events import reply, tool_call, tool_result
 from app.models.decision import Funding, PaymentDecision, PaymentEconomics
 from app.models.invoice import ExtractedInvoice
@@ -28,6 +29,7 @@ def build_payment_decision_workflow(
     as_of: date,
     demo_merchant: str,
     proposals: PaymentProposals | None = None,
+    playground_review: bool = False,
 ) -> Workflow:
     async def get_payment_options(
         evaluation_date: str, tool_context: ToolContext
@@ -51,7 +53,9 @@ def build_payment_decision_workflow(
             "NO_CAPACITY",
         }:
             return
-        invoice = ctx.state.get("invoice_structured")
+        invoice = node_input.get("confirmed_invoice") or ctx.state.get(
+            "invoice_structured"
+        )
         if not invoice:
             return
         call_id = str(uuid4())
@@ -84,6 +88,12 @@ def build_payment_decision_workflow(
         if funding.offer and funding.offer.tenor_days != node_input.get("tenor_days"):
             funding = funding.model_copy(update={"offer": None})
         yield tool_result(options, call_id, "READY", "FUNDING_LOADED")
+        if confirmed_offer := node_input.get("confirmed_offer"):
+            yield Event(
+                actions=EventActions(
+                    state_delta={"confirmed_supplier_offer": confirmed_offer}
+                )
+            )
         yield Event(
             output={
                 "invoice": invoice,
@@ -161,8 +171,14 @@ def build_payment_decision_workflow(
                     message += (
                         f"\n\nReview simulated payment to {proposal.supplier_name} "
                         f"({proposal.masked_account}). Proposal ID: {proposal.id}. "
-                        "Confirm through the authenticated simulated-payments endpoint."
+                        + (
+                            f"Type `read-payment` to hear the terms. To consent, type `confirm-payment {proposal.id}`."
+                            if playground_review
+                            else "Confirm through the authenticated simulated-payments endpoint."
+                        )
                     )
+        if playground_review and result.economics.code == "NO_DISCOUNT":
+            message += f" If your supplier separately offered a discount for full payment, type `{OFFER}`."
         yield Event(
             content=reply(message),
             output=payload,

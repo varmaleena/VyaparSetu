@@ -5,12 +5,14 @@ from zoneinfo import ZoneInfo
 
 from google import genai
 from google.adk.apps import App
-from google.adk.workflow import Workflow
+from google.adk.workflow import FunctionNode, Workflow
 from google.genai import types
 
 from app.agents.cashflow_workflow import build_cashflow_workflow
 from app.agents.invoice_workflow import InvoiceWorkflow
 from app.agents.payment_decision_workflow import build_payment_decision_workflow
+from app.agents.playground_payment_review import build_payment_review
+from app.agents.repayment_monitoring_agent import build_repayment_monitoring_workflow
 from app.agents.supplier_risk_workflow import build_supplier_risk_workflow
 from app.config.settings import get_settings
 from app.services.gemini_service import GeminiInvoiceExtractor
@@ -60,25 +62,52 @@ def evaluation_date() -> date:
     return settings.scenario_date or datetime.now(ZoneInfo("Asia/Kolkata")).date()
 
 
+settlements = SettlementRepository(intake.repository.engine)
 cashflow_workflow = build_cashflow_workflow(
-    SettlementRepository(intake.repository.engine),
+    settlements,
     funding_repository=funding_repository,
     policy_share_bps=settings.repayment_share_bps,
     stress_bps=settings.settlement_stress_bps,
     as_of=evaluation_date,
     demo_merchant=settings.invoice_demo_merchant_id,
 )
+proposals = PaymentProposals(intake.repository.engine)
 payment_decision_workflow = build_payment_decision_workflow(
     funding_repository,
     as_of=evaluation_date(),
-    proposals=PaymentProposals(intake.repository.engine),
+    proposals=proposals,
+    playground_review=True,
     demo_merchant=settings.invoice_demo_merchant_id,
+)
+review = FunctionNode(
+    func=build_payment_review(
+        proposals,
+        settings.invoice_demo_merchant_id,
+        evaluation_date,
+        settings.pricing_discount_review_bps,
+    ),
+    name="merchant_payment_review",
+)
+repayment_monitoring = build_repayment_monitoring_workflow(
+    proposals,
+    settlements,
+    settings.invoice_demo_merchant_id,
+    evaluation_date,
+    settings.repayment_share_bps,
 )
 root_agent = Workflow(
     name="vyaparsetu",
     description="Process an invoice and check its supplier.",
     edges=[
-        ("START", invoice_workflow),
+        ("START", review),
+        (
+            review,
+            {
+                "invoice": invoice_workflow,
+                "offer": payment_decision_workflow,
+                "repayment": repayment_monitoring,
+            },
+        ),
         (invoice_workflow, supplier_risk_workflow),
         (supplier_risk_workflow, cashflow_workflow),
         (cashflow_workflow, payment_decision_workflow),

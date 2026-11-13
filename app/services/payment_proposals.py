@@ -5,6 +5,7 @@ import json
 from datetime import UTC, date, datetime
 from hmac import compare_digest
 from uuid import uuid4
+from zoneinfo import ZoneInfo
 
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import insert
@@ -12,6 +13,7 @@ from sqlalchemy.engine import Connection, Engine
 
 from app.models.decision import PaymentDecision
 from app.models.payment import PaymentConsent, PaymentProposal, SimulatedPayment
+from app.services.invoice_repository import intakes
 from app.services.payment_simulator import simulate_payment
 from app.tools.supplier_verification import normalized_name
 
@@ -134,6 +136,8 @@ class PaymentProposals:
         proposal_id: str,
         consent: PaymentConsent,
         as_of: date,
+        *,
+        session: str | None = None,
     ) -> SimulatedPayment | None:
         with self.engine.begin() as connection:
             row = (
@@ -149,6 +153,17 @@ class PaymentProposals:
                 .one_or_none()
             )
             if row is None:
+                return None
+            if (
+                session is not None
+                and connection.execute(
+                    sa.text(
+                        "SELECT 1 FROM invoice_intakes WHERE id=:id AND merchant_id=:merchant AND session_id=:session"
+                    ),
+                    {"id": row["intake_id"], "merchant": merchant, "session": session},
+                ).scalar_one_or_none()
+                is None
+            ):
                 return None
             if not consent.accepted or not compare_digest(
                 row["digest"], consent.terms_digest
@@ -169,7 +184,9 @@ class PaymentProposals:
                 row["account_token"],
             ):
                 raise ProposalConflict("The registered payee changed.")
-            receipt = simulate_payment(proposal)
+            receipt = simulate_payment(proposal).model_copy(
+                update={"scheduled_from": as_of}
+            )
             connection.execute(
                 proposals.update()
                 .where(proposals.c.id == proposal_id)
@@ -179,3 +196,33 @@ class PaymentProposals:
                 )
             )
             return receipt
+
+    def confirmed_receipt(
+        self, merchant: str, session: str, proposal_id: str
+    ) -> SimulatedPayment | None:
+        with self.engine.connect() as connection:
+            row = connection.execute(
+                sa.select(proposals.c.receipt, proposals.c.consent_at)
+                .select_from(
+                    proposals.join(intakes, proposals.c.intake_id == intakes.c.id)
+                )
+                .where(
+                    proposals.c.id == proposal_id,
+                    proposals.c.merchant_id == merchant,
+                    intakes.c.merchant_id == merchant,
+                    intakes.c.session_id == session,
+                    proposals.c.consent_at.is_not(None),
+                )
+            ).one_or_none()
+        if row is None or row.receipt is None:
+            return None
+        receipt = SimulatedPayment.model_validate(row.receipt)
+        if receipt.scheduled_from is None:
+            return receipt.model_copy(
+                update={
+                    "scheduled_from": row.consent_at.astimezone(
+                        ZoneInfo("Asia/Kolkata")
+                    ).date()
+                }
+            )
+        return receipt
