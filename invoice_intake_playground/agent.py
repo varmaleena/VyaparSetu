@@ -17,6 +17,7 @@ from app.services.gemini_service import GeminiInvoiceExtractor
 from app.services.invoice_duplicate_repository import InvoiceDuplicateRepository
 from app.services.invoice_intake import create_invoice_intake
 from app.services.payment_options_repository import PaymentOptionsRepository
+from app.services.payment_proposals import PaymentProposals
 from app.services.purchase_order_repository import PurchaseOrderRepository
 from app.services.settlement_repository import SettlementRepository
 from app.services.supplier_repository import SupplierRepository
@@ -70,6 +71,7 @@ cashflow_workflow = build_cashflow_workflow(
 payment_decision_workflow = build_payment_decision_workflow(
     funding_repository,
     as_of=evaluation_date(),
+    proposals=PaymentProposals(intake.repository.engine),
     demo_merchant=settings.invoice_demo_merchant_id,
 )
 root_agent = Workflow(

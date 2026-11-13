@@ -26,6 +26,7 @@ class PaymentOption(BaseModel):
     instant_net: NonNegativeInt = 0
     principal: NonNegativeInt = 0
     cost: NonNegativeInt = 0
+    repayment_total: NonNegativeInt = 0
     daily_installment: NonNegativeInt = 0
     net_savings: int = 0
 

@@ -83,6 +83,7 @@ def calculate_payment_economics(
                 instant_net=net,
                 principal=principal,
                 cost=cost,
+                repayment_total=principal + repayment_cost,
                 daily_installment=(principal + repayment_cost + offer.tenor_days - 1)
                 // offer.tenor_days
                 if principal and offer

@@ -13,7 +13,9 @@ from starlette.concurrency import run_in_threadpool
 
 from app.agents.tool_events import reply, tool_call, tool_result
 from app.models.decision import Funding, PaymentDecision, PaymentEconomics
+from app.models.invoice import ExtractedInvoice
 from app.services.payment_options_repository import PaymentOptionsRepository
+from app.services.payment_proposals import PaymentProposals
 from app.tools.payment_decision_tools import (
     apply_payment_policy,
     calculate_payment_economics,
@@ -25,6 +27,7 @@ def build_payment_decision_workflow(
     *,
     as_of: date,
     demo_merchant: str,
+    proposals: PaymentProposals | None = None,
 ) -> Workflow:
     async def get_payment_options(
         evaluation_date: str, tool_context: ToolContext
@@ -119,10 +122,51 @@ def build_payment_decision_workflow(
         )
         yield tool_result(policy, call_id, result.status, result.code)
         payload = result.model_dump(mode="json")
+        state = {"payment_decision": payload}
+        message = decision_message(result)
+        if proposals is not None and result.selected is not None:
+            verification = ctx.state.get("supplier_verification_result") or {}
+            intake = ctx.state.get("invoice_intake_result") or {}
+            invoice = ExtractedInvoice.model_validate(
+                ctx.state.get("invoice_structured")
+            )
+            if (
+                verification.get("status") == "VERIFIED"
+                and verification.get("intake_id") == intake.get("intake_id")
+                and verification.get("supplier_id")
+                and verification.get("masked_payout_account")
+                and intake.get("intake_id")
+                and invoice.invoice_number
+                and invoice.invoice_date
+            ):
+                try:
+                    pending = await run_in_threadpool(
+                        proposals.create,
+                        merchant=demo_merchant,
+                        session=ctx.session.id,
+                        intake=intake["intake_id"],
+                        supplier=verification["supplier_id"],
+                        masked_account=verification["masked_payout_account"],
+                        invoice_key=f"{invoice.invoice_date}:{invoice.invoice_number.strip().casefold()}",
+                        decision=result,
+                    )
+                except SQLAlchemyError:
+                    pending = None
+                if pending:
+                    proposal, digest = pending
+                    state["payment_proposal"] = {
+                        "terms": proposal.model_dump(mode="json"),
+                        "terms_digest": digest,
+                    }
+                    message += (
+                        f"\n\nReview simulated payment to {proposal.supplier_name} "
+                        f"({proposal.masked_account}). Proposal ID: {proposal.id}. "
+                        "Confirm through the authenticated simulated-payments endpoint."
+                    )
         yield Event(
-            content=reply(decision_message(result)),
+            content=reply(message),
             output=payload,
-            actions=EventActions(state_delta={"payment_decision": payload}),
+            actions=EventActions(state_delta=state),
         )
 
     from google.adk.workflow import FunctionNode

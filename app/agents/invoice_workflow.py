@@ -42,6 +42,7 @@ class InvoiceWorkflow(Workflow):
                 "cashflow_forecast": None,
                 "repayment_capacity": None,
                 "payment_decision": None,
+                "payment_proposal": None,
             }
             message = result.message
             if result.intake_id:

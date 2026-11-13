@@ -24,6 +24,7 @@ from google.adk.runners import Runner
 from starlette.middleware.base import RequestResponseEndpoint
 
 from app.api.invoice_routes import router as invoice_router
+from app.api.payment_routes import router as payment_router
 from app.api.routes import router
 from app.app_utils import services
 from app.app_utils.a2a import attach_a2a_routes
@@ -80,6 +81,7 @@ app: FastAPI = get_fast_api_app(
 )
 app.include_router(router)
 app.include_router(invoice_router)
+app.include_router(payment_router)
 app.title = "vyaparsetu"
 app.description = "API for interacting with the Agent vyaparsetu"
 
