@@ -714,7 +714,7 @@ document.getElementById('stress-shock-slider')?.addEventListener('input', async 
 // =========================================================================
 // 11. POLICY ASSISTANT CHAT
 // =========================================================================
-window.sendChatMessage = async function() {
+window.sendChatMessage = async function () {
   const input = document.getElementById('chat-input');
   if (!input || !input.value.trim()) return;
   const question = input.value.trim();
@@ -773,7 +773,7 @@ function handleFileSelection(file, context = 'home') {
   showToast(`Selected "${file.name}". Click "Process Invoice" to scan & underwrite.`);
 }
 
-window.processSelectedFile = async function(context = 'home') {
+window.processSelectedFile = async function (context = 'home') {
   if (!currentSelectedFile) {
     showToast('Please select an invoice file first.');
     return;
@@ -783,7 +783,7 @@ window.processSelectedFile = async function(context = 'home') {
   window.navToView('workspace', 'panel-decisioning');
 
   const reader = new FileReader();
-  reader.onload = async function(e) {
+  reader.onload = async function (e) {
     const base64Data = e.target.result.split(',')[1];
     try {
       const res = await fetch('/api/invoice/process', {

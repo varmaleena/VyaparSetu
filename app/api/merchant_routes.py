@@ -42,12 +42,18 @@ Merchant = Annotated[str, Depends(merchant_access)]
 
 @router.get("/", include_in_schema=False)
 def merchant_page() -> FileResponse:
-    return FileResponse(ASSETS / "index.html")
+    return FileResponse(
+        ASSETS / "index.html",
+        headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+    )
 
 
 @router.get("/assets/{asset}", include_in_schema=False)
 def asset_file(asset: Literal["app.js", "style.css"]) -> FileResponse:
-    return FileResponse(ASSETS / asset)
+    return FileResponse(
+        ASSETS / asset,
+        headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+    )
 
 
 @lru_cache
