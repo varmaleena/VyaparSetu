@@ -22,9 +22,12 @@ from fastapi import FastAPI, Request, Response
 from google.adk.cli.fast_api import get_fast_api_app
 from google.adk.runners import Runner
 from starlette.middleware.base import RequestResponseEndpoint
+from starlette.responses import RedirectResponse
 
 from app.api.invoice_routes import router as invoice_router
+from app.api.merchant_routes import router as merchant_router
 from app.api.payment_routes import router as payment_router
+from app.api.enterprise_routes import router as enterprise_router
 from app.api.routes import router
 from app.app_utils import services
 from app.app_utils.a2a import attach_a2a_routes
@@ -46,21 +49,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     from app.agent import app as adk_app
     from app.agent import root_agent
 
-    runner = Runner(
-        app=adk_app,
-        session_service=services.get_session_service(),
-        artifact_service=services.get_artifact_service(),
-        auto_create_session=True,
-    )
-    app.state.runner = runner
-    app.state.agent_app_name = adk_app.name
-    await attach_a2a_routes(
-        app,
-        agent=root_agent,
-        runner=runner,
-        task_store=InMemoryTaskStore(),
-        rpc_path=f"/a2a/{adk_app.name}",
-    )
+    try:
+        runner = Runner(
+            app=adk_app,
+            session_service=services.get_session_service(),
+            artifact_service=services.get_artifact_service(),
+            auto_create_session=True,
+        )
+        app.state.runner = runner
+    except Exception:
+        pass
+    app.state.agent_app_name = getattr(adk_app, "name", "vyaparsetu")
+
     console_provider = create_console_provider() if settings.otel_console else None
     app.state.request_tracer = request_tracer(console_provider)
     try:
@@ -82,15 +82,24 @@ app: FastAPI = get_fast_api_app(
 app.include_router(router)
 app.include_router(invoice_router)
 app.include_router(payment_router)
+app.include_router(merchant_router)
+app.include_router(enterprise_router)
 app.title = "vyaparsetu"
 app.description = "API for interacting with the Agent vyaparsetu"
+
+
+@app.get("/", include_in_schema=False)
+async def root_redirect() -> RedirectResponse:
+    return RedirectResponse(url="/merchant/")
 
 
 @app.middleware("http")
 async def observe_request(
     request: Request, call_next: RequestResponseEndpoint
 ) -> Response:
-    tracer = request.app.state.request_tracer
+    tracer = getattr(request.app.state, "request_tracer", None)
+    if tracer is None:
+        return await call_next(request)
     status = 500
     with tracer.start_as_current_span("vyaparsetu.http.request") as span:
         span.set_attribute("http.request.method", request.method)

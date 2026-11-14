@@ -4,6 +4,7 @@ from google.adk.agents import SequentialAgent
 
 root_agent = SequentialAgent(
     name="vyaparsetu",
-    description="VyaparSetu supplier invoice workflow.",
+    description="VyaparSetu autonomous supplier invoice-to-safe-payment decision agent.",
     sub_agents=[],
 )
+

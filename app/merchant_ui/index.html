@@ -1,0 +1,902 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VyaparSetu — Enterprise Supplier Invoice Financing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/merchant/assets/style.css?v=30">
+  <script type="module" src="/merchant/assets/app.js?v=30"></script>
+</head>
+
+<body>
+  <!-- ========================================================================= -->
+  <!-- 1. PUBLIC ENTERPRISE HOME PAGE (CLEAN MERCHANT-FACING FINTECH PRODUCT)    -->
+  <!-- ========================================================================= -->
+  <div id="view-home" class="public-home">
+    <!-- Home Navigation Bar -->
+    <header class="home-nav">
+      <a href="#" class="brand" onclick="window.navToView('home'); return false;">
+        <span class="brand-mark">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+            <line x1="4" y1="22" x2="4" y2="15"></line>
+          </svg>
+        </span>
+        <span class="brand-name">VyaparSetu</span>
+      </a>
+
+      <nav class="home-nav-links">
+        <a href="#how-it-works" class="nav-link" onclick="window.scrollToSection('features'); return false;">How It Works</a>
+        <a href="#agent-graph" class="nav-link" onclick="window.navToView('workspace', 'panel-superagent'); return false;">Agent Graph Console</a>
+      </nav>
+
+      <div class="home-nav-actions">
+        <select id="home-lang-select" class="lang-sel" aria-label="Language">
+          <option value="te" selected>Telugu</option>
+          <option value="hi">Hindi</option>
+          <option value="en">English</option>
+        </select>
+        <button class="btn btn-primary" onclick="window.navToView('workspace', 'panel-decisioning')">
+          Launch Workspace
+        </button>
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="home-hero-wrap">
+      <div class="home-hero">
+        <!-- Left Hero Column -->
+        <div class="home-hero-content">
+          <div class="hero-eyebrow" style="font-size: 0.8rem; font-weight: 700; color: var(--primary-btn); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px;">
+            VyaparSetu
+          </div>
+
+          <h1 class="home-hero-title">
+            Turn supplier bills into<br>
+            safe cash-discount savings.
+          </h1>
+
+          <p class="home-hero-subtitle">
+            Capture supplier cash discounts today. Repay safely from tomorrow’s QR collections.
+          </p>
+
+          <div style="margin-bottom: 26px;">
+            <button class="btn btn-primary btn-lg" onclick="document.getElementById('home-file-input').click()">
+              Upload supplier bill
+            </button>
+          </div>
+
+          <!-- Supporting Trust Lines -->
+          <div class="hero-benefits-list">
+            <div class="hero-benefit-item">
+              <span class="benefit-dot"></span>
+              <span>Instant settlement to verified supplier accounts</span>
+            </div>
+            <div class="hero-benefit-item">
+              <span class="benefit-dot"></span>
+              <span>Voice approval in Telugu, Hindi &amp; English</span>
+            </div>
+            <div class="hero-benefit-item">
+              <span class="benefit-dot"></span>
+              <span>Daily repayment aligned with QR collections</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Hero Column: Upload Supplier Bill Card -->
+        <div class="home-hero-card-col">
+          <div class="glass-solid card hero-intake-card">
+            <span class="card-label">STEP 1 &middot; INVOICE INTAKE</span>
+            <h3 class="card-title">Upload supplier bill</h3>
+            <p style="font-size: 0.82rem; color: var(--text-body); margin-bottom: 14px;">
+              Upload a photo or PDF of your supplier invoice to check cash-discount terms and verify the payee account.
+            </p>
+
+            <!-- Upload Dropzone -->
+            <div class="intake-dropzone" onclick="document.getElementById('home-file-input').click()">
+              <input type="file" id="home-file-input" accept="image/*,application/pdf" hidden>
+              <div class="dropzone-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+              </div>
+              <strong style="font-size: 0.9rem; display: block; color: var(--heading);">Select supplier bill</strong>
+              <small style="color: var(--text-muted);">PDF, JPEG, or PNG up to 10 MB</small>
+            </div>
+
+            <!-- Selected File Status & Process Button -->
+            <div id="home-selected-file-wrap" style="display: none; margin-top: 12px; padding: 12px 14px; background: rgba(139, 74, 54, 0.08); border-radius: 8px; border: 1px solid rgba(139, 74, 54, 0.2);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 0.82rem; font-weight: 600; color: var(--heading);" id="home-selected-filename">invoice.jpg</span>
+                <span class="badge badge-accent">Ready to Scan</span>
+              </div>
+              <button class="btn btn-primary btn-block btn-sm" id="btn-home-process-file" onclick="window.processSelectedFile('home')">
+                Process Invoice
+              </button>
+            </div>
+
+            <!-- Choice of Invoice Profiles -->
+            <div style="margin-top: 18px;">
+              <span class="card-label" style="font-size: 0.7rem; margin-bottom: 8px;">OR CHOOSE AN INVOICE FILE</span>
+              <div class="intake-profiles-list">
+                <button class="btn btn-soft btn-sm scenario-btn" data-scenario-key="clean_bill_approve_full" onclick="window.selectInvoiceScenario('clean_bill_approve_full')">
+                  Sri Balaji Distributors — ₹40,000 • 3% off
+                </button>
+                <button class="btn btn-soft btn-sm scenario-btn" data-scenario-key="weaker_merchant_partial" onclick="window.selectInvoiceScenario('weaker_merchant_partial')">
+                  Sri Balaji Distributors — ₹40,000 • Constrained cash flow
+                </button>
+                <button class="btn btn-soft btn-sm scenario-btn" data-scenario-key="invalid_gstin_mismatch" onclick="window.selectInvoiceScenario('invalid_gstin_mismatch')">
+                  Unverified supplier bill — Invalid GSTIN
+                </button>
+              </div>
+            </div>
+
+            <!-- Active Merchant Context Footer -->
+            <div class="intake-card-footer">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;">ACTIVE MERCHANT:</span>
+                <span class="badge badge-accent">READY</span>
+              </div>
+              <div style="font-size: 0.86rem; font-weight: 600; color: var(--heading);">Sri Ravi Kirana Store</div>
+              <div style="font-size: 0.76rem; color: var(--text-body);">Hyderabad, Telangana</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Three Simple Merchant-Friendly Trust Cards -->
+    <section id="features" class="home-features-wrap">
+      <div class="home-feature-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+        <div class="glass-solid card feature-card">
+          <div class="feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <h4 style="font-size: 1rem; font-weight: 600; color: var(--heading); margin-bottom: 8px;">Verified supplier payments</h4>
+          <p style="font-size: 0.84rem; color: var(--text-body); line-height: 1.5;">
+            Financed amounts are routed only to the supplier account approved by the merchant.
+          </p>
+        </div>
+
+        <div class="glass-solid card feature-card">
+          <div class="feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+          </div>
+          <h4 style="font-size: 1rem; font-weight: 600; color: var(--heading); margin-bottom: 8px;">Cash-flow-aware limits</h4>
+          <p style="font-size: 0.84rem; color: var(--text-body); line-height: 1.5;">
+            Daily repayment is sized using a conservative view of upcoming QR collections.
+          </p>
+        </div>
+
+        <div class="glass-solid card feature-card">
+          <div class="feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+          </div>
+          <h4 style="font-size: 1rem; font-weight: 600; color: var(--heading); margin-bottom: 8px;">Voice-first merchant control</h4>
+          <p style="font-size: 0.84rem; color: var(--text-body); line-height: 1.5;">
+            Merchants review and approve every payment in Telugu, Hindi, or English.
+          </p>
+        </div>
+      </div>
+
+      <!-- Subtle "See how VyaparSetu works" Link -->
+      <div style="text-align: center; margin-top: 36px;">
+        <a href="#how-it-works" class="nav-link" onclick="window.navToView('workspace', 'panel-superagent'); return false;" style="font-size: 0.95rem; font-weight: 600; color: var(--primary-btn); text-decoration: none;">
+          See how VyaparSetu works &rarr;
+        </a>
+      </div>
+    </section>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. ENTERPRISE APP SHELL (SIDEBAR NAVIGATION + MAIN STAGE WORKSPACE)       -->
+  <!-- ========================================================================= -->
+  <div id="view-workspace" class="app-shell" style="display: none;">
+    <!-- Sleek Enterprise Sidebar (Matches Image 2 & Image 3 Reference) -->
+    <aside class="sidebar">
+      <a href="#" class="sidebar-brand" onclick="window.navToView('home'); return false;">
+        <span class="brand-mark">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+            <line x1="4" y1="22" x2="4" y2="15"></line>
+          </svg>
+        </span>
+        <div>
+          <div class="brand-name">VyaparSetu</div>
+          <div class="brand-subtitle">Enterprise Kirana Credit</div>
+        </div>
+      </a>
+
+      <!-- Navigation Section 1: Workspaces -->
+      <div class="nav-group-label">WORKSPACES</div>
+      <nav class="sidebar-nav" style="margin-bottom: 24px;">
+        <button class="side-nav-item" id="nav-item-home" onclick="window.navToView('home')">
+          <span class="nav-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </span>
+          <span>Home &amp; Overview</span>
+        </button>
+
+        <button class="side-nav-item active" id="nav-item-decisioning" onclick="window.switchWorkspacePanel('panel-decisioning')">
+          <span class="nav-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </span>
+          <span>Invoice Decisioning</span>
+        </button>
+
+        <button class="side-nav-item" id="nav-item-soundbox" onclick="window.switchWorkspacePanel('panel-soundbox')">
+          <span class="nav-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          </span>
+          <span>Soundbox 4.0 Voice</span>
+        </button>
+
+        <button class="side-nav-item" id="nav-item-repayment" onclick="window.switchWorkspacePanel('panel-repayment')">
+          <span class="nav-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </span>
+          <span>Repayment Engine</span>
+        </button>
+
+        <!-- Super Agent Graph (Highlighted like Image 2 Reference) -->
+        <button class="side-nav-item super-agent-pill" id="nav-item-superagent" onclick="window.switchWorkspacePanel('panel-superagent')">
+          <span class="nav-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
+          </span>
+          <span>Super Agent Graph</span>
+          <span class="nav-pill-badge">ADK</span>
+        </button>
+      </nav>
+
+      <!-- Navigation Section 2: Support & Governance -->
+      <div class="nav-group-label">SUPPORT &amp; GOVERNANCE</div>
+      <nav class="sidebar-nav">
+        <button class="side-nav-item" id="nav-item-blockchain" onclick="window.switchWorkspacePanel('panel-blockchain')">
+          <span class="nav-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </span>
+          <span>Audit Blockchain</span>
+        </button>
+
+        <button class="side-nav-item" id="nav-item-risk" onclick="window.switchWorkspacePanel('panel-risk')">
+          <span class="nav-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          </span>
+          <span>Portfolio Risk</span>
+        </button>
+
+        <button class="side-nav-item" id="nav-item-policy" onclick="window.switchWorkspacePanel('panel-policy')">
+          <span class="nav-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </span>
+          <span>Policy Assistant</span>
+        </button>
+
+        <button class="side-nav-item" id="nav-item-settings" onclick="window.switchWorkspacePanel('panel-settings')">
+          <span class="nav-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </span>
+          <span>Voice &amp; AI Settings</span>
+        </button>
+      </nav>
+
+      <!-- Sidebar Footer (Active Merchant Context) -->
+      <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(235, 201, 190, 0.4);">
+        <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; margin-bottom: 2px;">MERCHANT ACCOUNT</div>
+        <div style="font-size: 0.82rem; font-weight: 600; color: var(--heading);">Sri Ravi Kirana Store</div>
+        <div style="font-size: 0.74rem; color: var(--text-body);">Hyderabad &middot; GSTIN: 36ABCDE1234F1Z5</div>
+      </div>
+    </aside>
+
+    <!-- Main Stage Content Area -->
+    <main class="main-stage">
+      <!-- Top Stage Bar -->
+      <header class="stage-topbar">
+        <div class="topbar-title">
+          <span id="current-stage-title">Invoice Decisioning</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <!-- Sarvam AI Voice Indicator Pill -->
+          <div class="sarvam-status-pill" onclick="window.switchWorkspacePanel('panel-settings')">
+            <span class="sarvam-dot"></span>
+            <span>Sarvam AI 500 Credits Active</span>
+          </div>
+
+          <!-- Language Selector -->
+          <select id="stage-lang-select" class="lang-sel" aria-label="Language">
+            <option value="te" selected>Telugu</option>
+            <option value="hi">Hindi</option>
+            <option value="en">English</option>
+          </select>
+
+          <!-- Back to Home Button -->
+          <button class="btn btn-soft btn-sm" onclick="window.navToView('home')">
+            Exit to Home
+          </button>
+        </div>
+      </header>
+
+      <!-- Stage Views -->
+      <div class="stage-content">
+        <!-- ================================================================= -->
+        <!-- PANEL 1: INVOICE DECISIONING (STEPS 2 & 3)                         -->
+        <!-- ================================================================= -->
+        <section id="panel-decisioning" class="view-panel active">
+          <!-- Step 1 Mini Selector Toolbar -->
+          <div class="glass-solid card" style="margin-bottom: 20px; padding: 14px 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span class="card-label" style="margin: 0;">ACTIVE INVOICE:</span>
+                <span class="badge badge-accent" id="active-invoice-tag">Sri Balaji Distributors (₹40,000)</span>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-soft btn-sm scenario-btn active" data-scenario-key="clean_bill_approve_full" onclick="window.loadScenario('clean_bill_approve_full')">
+                  Standard Bill
+                </button>
+                <button class="btn btn-soft btn-sm scenario-btn" data-scenario-key="weaker_merchant_partial" onclick="window.loadScenario('weaker_merchant_partial')">
+                  Constrained Kirana
+                </button>
+                <button class="btn btn-soft btn-sm scenario-btn" data-scenario-key="invalid_gstin_mismatch" onclick="window.loadScenario('invalid_gstin_mismatch')">
+                  Invalid GSTIN
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="document.getElementById('workspace-file-input').click()">
+                  Upload New
+                </button>
+                <input type="file" id="workspace-file-input" accept="image/*,application/pdf" hidden>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 2: Extraction & Supplier Verification -->
+          <div class="glass-solid card" id="card-step-verification" style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <span class="card-label" style="margin: 0;">STEP 2 &middot; GEMINI VISION EXTRACTION &amp; GSTIN VERIFICATION</span>
+              <span class="badge badge-green" id="verification-status-tag">Verified Active</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 14px;">
+              <div style="background: rgba(255, 255, 255, 0.4); padding: 12px 14px; border-radius: 8px;">
+                <span style="font-size: 0.7rem; color: var(--text-muted); display: block;">Supplier Payee:</span>
+                <strong style="font-size: 0.92rem; color: var(--heading);" id="disp-supplier-name">—</strong>
+              </div>
+              <div style="background: rgba(255, 255, 255, 0.4); padding: 12px 14px; border-radius: 8px;">
+                <span style="font-size: 0.7rem; color: var(--text-muted); display: block;">GSTIN Modulo-36 Checksum:</span>
+                <strong style="font-size: 0.92rem;" id="disp-gstin-status">—</strong>
+              </div>
+              <div style="background: rgba(255, 255, 255, 0.4); padding: 12px 14px; border-radius: 8px;">
+                <span style="font-size: 0.7rem; color: var(--text-muted); display: block;">Original Invoice Total:</span>
+                <strong style="font-size: 0.92rem; color: var(--heading);" id="disp-inv-total">—</strong>
+              </div>
+              <div style="background: rgba(255, 255, 255, 0.4); padding: 12px 14px; border-radius: 8px;">
+                <span style="font-size: 0.7rem; color: var(--text-muted); display: block;">Prompt Cash Discount:</span>
+                <strong style="font-size: 0.92rem; color: var(--green);" id="disp-disc-terms">—</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 3: Underwriting & Savings Calculation -->
+          <div class="glass card decision-card" id="card-step-underwriting">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="card-label" style="margin: 0;">STEP 3 &middot; P20 CASHFLOW UNDERWRITING &amp; ARBITRAGE</span>
+              <span class="verdict-pill approve" id="decision-verdict-badge">APPROVE_FULL</span>
+            </div>
+
+            <h2 class="decision-title" id="decision-verdict-title">Fully Approved for Purpose-Bound Supplier Payment</h2>
+            <p class="decision-explain" id="decision-merchant-explanation">
+              Mee QR collections stable ga unnai. Full amount supplier ki direct ga pay chesi net discount benefit pondandi.
+            </p>
+
+            <!-- Arbitrage Summary Grid -->
+            <div class="arb-grid">
+              <div class="arb-cell">
+                <div class="arb-label">Original Invoice Amount</div>
+                <div class="arb-val" id="arb-invoice-amt">—</div>
+              </div>
+              <div class="arb-cell highlight">
+                <div class="arb-label">Prompt Cash Discount</div>
+                <div class="arb-val c-green" id="arb-discount-val">—</div>
+              </div>
+              <div class="arb-cell">
+                <div class="arb-label">Net Disbursed to Supplier</div>
+                <div class="arb-val" id="arb-pay-amt">—</div>
+              </div>
+              <div class="arb-cell">
+                <div class="arb-label">Financing Fee (20 Days)</div>
+                <div class="arb-val c-accent" id="arb-interest-cost">—</div>
+              </div>
+              <div class="arb-cell highlight">
+                <div class="arb-label">Net Merchant Profit</div>
+                <div class="arb-val c-green" id="arb-net-benefit">—</div>
+              </div>
+              <div class="arb-cell">
+                <div class="arb-label">Daily QR Repayment (EDI)</div>
+                <div class="arb-val c-accent" id="arb-daily-edi">—</div>
+              </div>
+            </div>
+
+            <!-- Locked Supplier Destination Notice -->
+            <div class="lock-strip" id="supplier-lock-banner">
+              <span style="color: var(--primary-btn);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </span>
+              <div style="flex: 1;">
+                <strong id="supplier-lock-text">Sri Balaji Distributors (GSTIN: 36AAAAA0000A1Z3) &middot; HDFC Bank (•••• 4201)</strong>
+                <small>RBI Specific-End-Use Mandate &middot; Direct disbursement to verified supplier bank account</small>
+              </div>
+              <span class="badge badge-green" id="supplier-verified-tick">Verified Match</span>
+            </div>
+
+            <!-- Proceed to Soundbox Button -->
+            <button class="btn btn-primary btn-block btn-lg" id="btn-proceed-consent" onclick="window.switchWorkspacePanel('panel-soundbox')">
+              Proceed to Soundbox 4.0 Voice Consent &rarr;
+            </button>
+          </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- PANEL 2: SOUNDBOX 4.0 VOICE CONSENT (STEP 4)                      -->
+        <!-- ================================================================= -->
+        <section id="panel-soundbox" class="view-panel">
+          <div class="glass-solid card" id="card-step-soundbox">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <div>
+                <span class="card-label" style="margin: 0;">STEP 4 &middot; PAYTM SOUNDBOX 4.0 VOICE CONSENT</span>
+                <h3 class="card-title" style="margin: 4px 0 0;">Cryptographic Merchant Authorization</h3>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <span class="badge badge-accent">Sarvam AI Bulbul v1</span>
+                <span class="badge badge-green">4G SIM Connected</span>
+              </div>
+            </div>
+
+            <!-- Waveform Animation -->
+            <div class="waveform" id="soundbox-waveform">
+              <div class="wave-bar" style="animation-delay: 0.05s"></div>
+              <div class="wave-bar" style="animation-delay: 0.2s"></div>
+              <div class="wave-bar" style="animation-delay: 0.35s"></div>
+              <div class="wave-bar" style="animation-delay: 0.15s"></div>
+              <div class="wave-bar" style="animation-delay: 0.4s"></div>
+              <div class="wave-bar" style="animation-delay: 0.25s"></div>
+              <div class="wave-bar" style="animation-delay: 0.3s"></div>
+              <div class="wave-bar" style="animation-delay: 0.1s"></div>
+            </div>
+
+            <!-- Audio Readback Prompt Box -->
+            <div class="script-box">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 0.74rem; font-weight: 600; color: var(--primary-btn);">SOUNDBOX AUDIO SCRIPT (SARVAM AI TTS)</span>
+                <button class="btn btn-soft btn-sm" id="btn-play-audio" onclick="window.playVoiceAudio()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 4px;">
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg> Play Voice
+                </button>
+              </div>
+              <blockquote id="voice-script-text">
+                "Standby mode. Audio prompt generates when an active invoice decision is approved."
+              </blockquote>
+            </div>
+
+            <!-- Decision Hash Commitment -->
+            <div class="hash-row">
+              <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 4px;">SHA-256 DECISION HASH COMMITMENT:</span>
+              <code id="display-decision-hash">Awaiting decision lock...</code>
+            </div>
+
+            <!-- Consent Actions -->
+            <div class="consent-row">
+              <button class="btn btn-green btn-lg" id="btn-voice-approve" onclick="window.confirmConsent('Approve')">
+                Approve Payment (Execute Rail)
+              </button>
+              <button class="btn btn-outline btn-lg" id="btn-voice-reject" onclick="window.confirmConsent('Reject')">
+                Decline / Cancel
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- PANEL 3: REPAYMENT ENGINE & SETTLEMENT STREAM (STEP 5)            -->
+        <!-- ================================================================= -->
+        <section id="panel-repayment" class="view-panel">
+          <div class="glass-solid card" id="card-step-repayment">
+            <span class="card-label">STEP 5 &middot; DIRECT DISBURSAL &amp; DAILY QR RECOVERY</span>
+
+            <!-- Receipt Details (Revealed upon approval) -->
+            <div id="payment-success-card" class="receipt-card" style="margin-bottom: 20px;" hidden>
+              <div class="receipt-head">
+                <span class="receipt-check">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </span>
+                <div>
+                  <h3 style="font-size: 1.05rem; font-weight: 600; color: var(--heading);">Payment Disbursed to Supplier</h3>
+                  <p style="font-size: 0.78rem; color: var(--text-body);">Purpose-bound payout rail executed. Daily settlement deduction hook registered.</p>
+                </div>
+              </div>
+              <div class="receipt-grid">
+                <div><span class="r-label">Payment Ref:</span><strong id="receipt-ref" class="mono">—</strong></div>
+                <div><span class="r-label">Payee Account:</span><strong id="receipt-acc">—</strong></div>
+                <div><span class="r-label">Daily EDI:</span><strong id="receipt-edi" class="c-accent">—</strong></div>
+                <div><span class="r-label">Tenor:</span><strong id="receipt-tenor">—</strong></div>
+              </div>
+            </div>
+
+            <!-- Live Settlement Stream Table -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div>
+                <strong style="font-size: 0.92rem; color: var(--heading);">Daily Settlement Recovery Stream</strong>
+                <p style="font-size: 0.76rem; color: var(--text-muted); margin: 0;">Automated deduction from nightly Paytm QR batch settlement.</p>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-primary btn-sm" id="btn-stream-step">Step 1 Day</button>
+                <button class="btn btn-soft btn-sm" id="btn-stream-play">Auto Stream</button>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Day #</th>
+                    <th>Date</th>
+                    <th>Gross QR Inflow</th>
+                    <th>EDI Split (Lender)</th>
+                    <th>Net Merchant Settlement</th>
+                    <th>Remaining Obligation</th>
+                    <th>Coverage</th>
+                  </tr>
+                </thead>
+                <tbody id="settlement-stream-tbody">
+                  <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                      No active settlement stream. Complete invoice consent to activate live recovery.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- PANEL 4: SUPER AGENT ORCHESTRATION GRAPH (GOOGLE ADK WORKFLOW)    -->
+        <!-- ================================================================= -->
+        <section id="panel-superagent" class="view-panel">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h2 style="font-size: 1.4rem; font-weight: 600; color: var(--heading); margin-bottom: 4px;">
+                Google ADK Agent Orchestration Graph
+              </h2>
+              <p style="font-size: 0.84rem; color: var(--text-body);">
+                Visual workflow topology, runtime status, and payload inspection across 10 autonomous ADK agents.
+              </p>
+            </div>
+            <span class="badge badge-green" id="graph-runtime-status">Workflow Engine: Active</span>
+          </div>
+
+          <!-- ADK Graph Canvas + Node Inspector -->
+          <div class="adk-graph-container">
+            <!-- Left: Interactive Graph Canvas -->
+            <div class="graph-canvas-wrap">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <span class="card-label" style="margin: 0;">TOPOLOGICAL EXECUTION PIPELINE</span>
+                <small style="color: var(--text-muted);">Click any node to inspect payload</small>
+              </div>
+
+              <!-- Interactive SVG Orchestration Graph -->
+              <svg class="graph-svg" id="adk-graph-svg" viewBox="0 0 760 500">
+                <defs>
+                  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 1 L 9 5 L 0 9 z" fill="rgba(139, 74, 54, 0.7)"/>
+                  </marker>
+                </defs>
+
+                <!-- Directed Edges -->
+                <g id="graph-edges-group">
+                  <line x1="80" y1="80" x2="220" y2="80" class="graph-edge" marker-end="url(#arrow)"/>
+                  <line x1="340" y1="80" x2="480" y2="80" class="graph-edge" marker-end="url(#arrow)"/>
+                  <line x1="600" y1="80" x2="680" y2="170" class="graph-edge" marker-end="url(#arrow)"/>
+                  <line x1="680" y1="210" x2="600" y2="300" class="graph-edge" marker-end="url(#arrow)"/>
+                  <line x1="480" y1="300" x2="340" y2="300" class="graph-edge" marker-end="url(#arrow)"/>
+                  <line x1="220" y1="300" x2="80" y2="300" class="graph-edge" marker-end="url(#arrow)"/>
+                  <line x1="80" y1="340" x2="80" y2="430" class="graph-edge" marker-end="url(#arrow)"/>
+                  <line x1="140" y1="450" x2="280" y2="450" class="graph-edge" marker-end="url(#arrow)"/>
+                  <line x1="400" y1="450" x2="540" y2="450" class="graph-edge" marker-end="url(#arrow)"/>
+                </g>
+
+                <!-- Agent Nodes -->
+                <g id="graph-nodes-group">
+                  <!-- Node 1: Intake -->
+                  <g class="agent-node" id="node-intake" transform="translate(20, 50)" onclick="window.inspectAgentNode('intake')">
+                    <rect width="130" height="60" rx="8" fill="#fff" stroke="rgba(235, 201, 190, 0.9)" stroke-width="1.5"/>
+                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">InvoiceIntake</text>
+                    <text x="14" y="42" font-size="9" fill="#B5A59E">Document Verification</text>
+                  </g>
+
+                  <!-- Node 2: Vision OCR -->
+                  <g class="agent-node" id="node-vision" transform="translate(210, 50)" onclick="window.inspectAgentNode('vision')">
+                    <rect width="140" height="60" rx="8" fill="#fff" stroke="rgba(235, 201, 190, 0.9)" stroke-width="1.5"/>
+                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">GeminiVisionAgent</text>
+                    <text x="14" y="42" font-size="9" fill="#B5A59E">gemini-2.5-flash</text>
+                  </g>
+
+                  <!-- Node 3: Supplier Risk -->
+                  <g class="agent-node" id="node-supplier_risk" transform="translate(470, 50)" onclick="window.inspectAgentNode('supplier_risk')">
+                    <rect width="140" height="60" rx="8" fill="#fff" stroke="rgba(235, 201, 190, 0.9)" stroke-width="1.5"/>
+                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">SupplierRiskAgent</text>
+                    <text x="14" y="42" font-size="9" fill="#B5A59E">GSTIN Modulo-36</text>
+                  </g>
+
+                  <!-- Node 4: Duplicate Fraud -->
+                  <g class="agent-node" id="node-duplicate_fraud" transform="translate(620, 160)" onclick="window.inspectAgentNode('duplicate_fraud')">
+                    <rect width="130" height="60" rx="8" fill="#fff" stroke="rgba(235, 201, 190, 0.9)" stroke-width="1.5"/>
+                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">DuplicateFraudAgent</text>
+                    <text x="14" y="42" font-size="9" fill="#B5A59E">SHA-256 Fingerprint</text>
+                  </g>
+
+                  <!-- Node 5: Cashflow Sizing -->
+                  <g class="agent-node" id="node-cashflow_p20" transform="translate(470, 270)" onclick="window.inspectAgentNode('cashflow_p20')">
+                    <rect width="140" height="60" rx="8" fill="#fff" stroke="rgba(235, 201, 190, 0.9)" stroke-width="1.5"/>
+                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">CashflowSizingAgent</text>
+                    <text x="14" y="42" font-size="9" fill="#B5A59E">P20 Empirical Quantile</text>
+                  </g>
+
+                  <!-- Node 6: Arbitrage -->
+                  <g class="agent-node" id="node-arbitrage" transform="translate(210, 270)" onclick="window.inspectAgentNode('arbitrage')">
+                    <rect width="140" height="60" rx="8" fill="#fff" stroke="rgba(235, 201, 190, 0.9)" stroke-width="1.5"/>
+                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">DiscountArbitrage</text>
+                    <text x="14" y="42" font-size="9" fill="#B5A59E">Math Profit Delta</text>
+                  </g>
+
+                  <!-- Node 7: Policy -->
+                  <g class="agent-node" id="node-policy" transform="translate(20, 270)" onclick="window.inspectAgentNode('policy')">
+                    <rect width="130" height="60" rx="8" fill="#fff" stroke="rgba(235, 201, 190, 0.9)" stroke-width="1.5"/>
+                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">PolicyDecisionAgent</text>
+                    <text x="14" y="42" font-size="9" fill="#B5A59E">Decision Matrix</text>
+                  </g>
+
+                  <!-- Node 8: Soundbox Voice -->
+                  <g class="agent-node" id="node-voice_consent" transform="translate(20, 420)" onclick="window.inspectAgentNode('voice_consent')">
+                    <rect width="130" height="60" rx="8" fill="#fff" stroke="rgba(235, 201, 190, 0.9)" stroke-width="1.5"/>
+                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">VoiceConsentAgent</text>
+                    <text x="14" y="42" font-size="9" fill="#B5A59E">Soundbox 4.0 Hash Lock</text>
+                  </g>
+
+                  <!-- Node 9: Payment Execution -->
+                  <g class="agent-node" id="node-payment_exec" transform="translate(270, 420)" onclick="window.inspectAgentNode('payment_exec')">
+                    <rect width="140" height="60" rx="8" fill="#fff" stroke="rgba(235, 201, 190, 0.9)" stroke-width="1.5"/>
+                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">PaymentExecution</text>
+                    <text x="14" y="42" font-size="9" fill="#B5A59E">Idempotent Payout Rail</text>
+                  </g>
+
+                  <!-- Node 10: Settlement Loop -->
+                  <g class="agent-node" id="node-settlement_loop" transform="translate(530, 420)" onclick="window.inspectAgentNode('settlement_loop')">
+                    <rect width="140" height="60" rx="8" fill="#fff" stroke="rgba(235, 201, 190, 0.9)" stroke-width="1.5"/>
+                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">SettlementLoopAgent</text>
+                    <text x="14" y="42" font-size="9" fill="#B5A59E">Daily QR EDI Recovery</text>
+                  </g>
+                </g>
+              </svg>
+            </div>
+
+            <!-- Right: Real-Time Node Inspector Drawer -->
+            <div class="glass-solid card node-inspector">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(235, 201, 190, 0.4); padding-bottom: 10px;">
+                <strong style="font-size: 0.88rem; color: var(--heading);" id="inspector-title">Agent Inspector</strong>
+                <span class="badge badge-accent" id="inspector-status-badge">Standby</span>
+              </div>
+
+              <div style="font-size: 0.78rem; color: var(--text-body);" id="inspector-role">
+                Select any node in the orchestration graph to inspect its runtime payload and latency.
+              </div>
+
+              <div>
+                <span class="card-label" style="font-size: 0.7rem; margin-bottom: 4px;">MODEL / RUNTIME:</span>
+                <div style="font-size: 0.8rem; font-family: 'JetBrains Mono', monospace;" id="inspector-model">—</div>
+              </div>
+
+              <div>
+                <span class="card-label" style="font-size: 0.7rem; margin-bottom: 4px;">EXECUTION LATENCY:</span>
+                <div style="font-size: 0.8rem; font-family: 'JetBrains Mono', monospace;" id="inspector-latency">—</div>
+              </div>
+
+              <div>
+                <span class="card-label" style="font-size: 0.7rem; margin-bottom: 4px;">INPUT / OUTPUT PAYLOAD:</span>
+                <pre style="background: rgba(255, 255, 255, 0.6); padding: 10px; border-radius: 8px; font-size: 0.72rem; font-family: 'JetBrains Mono', monospace; max-height: 180px; overflow-y: auto; color: var(--heading);" id="inspector-payload">{
+  "status": "awaiting_trigger"
+}</pre>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- PANEL 5: AUDIT BLOCKCHAIN (SHA-256 HASH-CHAINED LEDGER)            -->
+        <!-- ================================================================= -->
+        <section id="panel-blockchain" class="view-panel">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h2 style="font-size: 1.4rem; font-weight: 600; color: var(--heading); margin-bottom: 4px;">
+                Cryptographic Audit Blockchain Ledger
+              </h2>
+              <p style="font-size: 0.84rem; color: var(--text-body);">
+                Immutable SHA-256 hash-chained block records verifying the lineage of every underwriting decision.
+              </p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-green btn-sm" onclick="window.verifyAuditLedger()">Verify Cryptographic Chain</button>
+              <button class="btn btn-red btn-sm" onclick="window.tamperAuditLedger()">Simulate Tamper Attack</button>
+            </div>
+          </div>
+
+          <div id="ledger-verify-result" class="verify-banner" hidden></div>
+
+          <div class="glass-solid card" style="padding: 0; overflow: hidden;">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Block #</th>
+                    <th>Timestamp</th>
+                    <th>Agent Actor</th>
+                    <th>Event Kind</th>
+                    <th>Payload Summary</th>
+                    <th>Previous Hash</th>
+                    <th>Block Hash</th>
+                  </tr>
+                </thead>
+                <tbody id="ledger-tbody">
+                  <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                      Ledger ready. Events will be appended as agents process the invoice.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- PANEL 6: PORTFOLIO RISK & SENSITIVITY STRESS-TEST                 -->
+        <!-- ================================================================= -->
+        <section id="panel-risk" class="view-panel">
+          <div class="glass-solid card">
+            <span class="card-label">DYNAMIC CASHFLOW STRESS-TEST</span>
+            <h2 class="sec-title">Revenue Shock Sensitivity Simulation</h2>
+            <p class="sec-sub">Simulate sudden drop in merchant daily footfall to evaluate policy behavior:</p>
+
+            <div style="margin-bottom: 24px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="font-size: 0.85rem; font-weight: 600; color: var(--heading);">Sales Shock Impact:</span>
+                <span id="stress-shock-label" style="font-size: 0.85rem; font-weight: 700; color: var(--primary-btn);">0% (Normal Baseline)</span>
+              </div>
+              <input type="range" id="stress-shock-slider" min="0" max="60" step="10" value="0" style="width: 100%; accent-color: var(--primary-btn);">
+              <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">
+                <span>0% Baseline</span>
+                <span>-20% Mild</span>
+                <span>-40% Moderate</span>
+                <span>-60% Severe Crash</span>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px;">
+              <div style="background: rgba(255, 255, 255, 0.4); padding: 14px; border-radius: 8px;">
+                <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">Stressed P20 Floor:</span>
+                <strong style="font-size: 1.1rem; color: var(--heading);" id="stress-p20-val">₹18,500 / day</strong>
+              </div>
+              <div style="background: rgba(255, 255, 255, 0.4); padding: 14px; border-radius: 8px;">
+                <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">Safe EDI Deduction Cap:</span>
+                <strong style="font-size: 1.1rem; color: var(--heading);" id="stress-cap-val">₹4,125 / day</strong>
+              </div>
+              <div style="background: rgba(255, 255, 255, 0.4); padding: 14px; border-radius: 8px;">
+                <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">Coverage Ratio:</span>
+                <strong style="font-size: 1.1rem; color: var(--green);" id="stress-ratio-val">2.11x</strong>
+              </div>
+              <div style="background: rgba(255, 255, 255, 0.4); padding: 14px; border-radius: 8px;">
+                <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">Policy Adaptation:</span>
+                <strong style="font-size: 1.1rem; color: var(--heading);" id="stress-policy-val">MAINTAIN_FULL</strong>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- PANEL 7: POLICY ASSISTANT (INTERACTIVE COMPLIANCE CHAT)            -->
+        <!-- ================================================================= -->
+        <section id="panel-policy" class="view-panel">
+          <div class="glass-solid card">
+            <span class="card-label">INTELLIGENT COMPLIANCE AGENT</span>
+            <h2 class="sec-title">Underwriting &amp; Regulatory Policy Assistant</h2>
+            <p class="sec-sub">Ask questions about RBI specific-end-use guidelines, P20 quantile math, or discount arbitrage equations.</p>
+
+            <div id="chat-messages" style="background: rgba(255, 255, 255, 0.45); border-radius: 10px; padding: 18px; min-height: 220px; max-height: 320px; overflow-y: auto; margin-bottom: 14px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="background: rgba(255, 255, 255, 0.8); padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; max-width: 85%;">
+                <strong>VyaparSetu Policy Agent:</strong> Hello! Ask me anything regarding the underwriting decision, cashflow capacity calculations, or RBI compliance rules.
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="chat-input" placeholder="e.g. Why was the daily EDI capped at 25% of P20 cashflow?" style="flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(235, 201, 190, 0.8); font: inherit; font-size: 0.86rem; background: #fff;">
+              <button class="btn btn-primary" onclick="window.sendChatMessage()">Ask Agent</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- PANEL 8: VOICE & AI SETTINGS (SARVAM AI 500 CREDITS CONFIG)       -->
+        <!-- ================================================================= -->
+        <section id="panel-settings" class="view-panel">
+          <div class="glass-solid card">
+            <span class="card-label">SARVAM AI INTEGRATION &middot; 500 CREDITS ACTIVE</span>
+            <h2 class="sec-title">Voice &amp; AI Engine Configuration</h2>
+            <p class="sec-sub">Manage your Sarvam AI Text-to-Speech API credentials and voice synthesis options for the Paytm Soundbox 4.0.</p>
+
+            <div style="background: rgba(139, 74, 54, 0.06); border: 1px solid rgba(139, 74, 54, 0.15); border-radius: 10px; padding: 16px; margin-bottom: 22px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <strong style="color: var(--primary-btn); font-size: 0.94rem;">Active Plan: 500 Sarvam Credits</strong>
+                  <p style="font-size: 0.8rem; color: var(--text-body); margin: 2px 0 0;">Model: <code>bulbul:v1</code> &middot; Supported: Telugu (<code>te-IN</code>), Hindi (<code>hi-IN</code>), English (<code>en-IN</code>)</p>
+                </div>
+                <span class="badge badge-green">Ready to Synthesize</span>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 16px; max-width: 540px;">
+              <div>
+                <label style="display: block; font-size: 0.82rem; font-weight: 600; color: var(--heading); margin-bottom: 6px;">
+                  Sarvam API Subscription Key:
+                </label>
+                <div style="display: flex; gap: 8px;">
+                  <input type="password" id="sarvam-api-key-input" placeholder="Paste your Sarvam API Key here" style="flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(235, 201, 190, 0.8); font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; background: #fff;">
+                  <button class="btn btn-primary btn-sm" onclick="window.saveSarvamKey()">Save Key</button>
+                </div>
+                <small style="color: var(--text-muted); display: block; margin-top: 4px;">Key is stored locally in your browser session for direct TTS calls.</small>
+              </div>
+
+              <div>
+                <label style="display: block; font-size: 0.82rem; font-weight: 600; color: var(--heading); margin-bottom: 6px;">
+                  Voice Speaker Persona:
+                </label>
+                <select id="sarvam-speaker-select" style="width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid rgba(235, 201, 190, 0.8); font: inherit; background: #fff;">
+                  <option value="meera" selected>Meera (Female &middot; Clear Indian Enunciation)</option>
+                  <option value="arvind">Arvind (Male &middot; Deep Trust Tone)</option>
+                </select>
+              </div>
+
+              <div style="display: flex; gap: 10px; margin-top: 8px;">
+                <button class="btn btn-soft" onclick="window.testSarvamVoice()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 4px;">
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg> Test Sarvam Audio
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="global-toast" class="toast glass-solid" hidden></div>
+</body>
+
+</html>

@@ -215,3 +215,5 @@ credentials*.json
 
 # Local Windows development services
 /.local-services/
+
+*.db

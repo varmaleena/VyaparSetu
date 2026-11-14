@@ -23,15 +23,16 @@ class Settings(BaseSettings):
     scenario_date: date | None = None
     repayment_share_bps: int = Field(default=1500, ge=0, le=10000)
     settlement_stress_bps: int = Field(default=3000, ge=0, le=10000)
-    invoice_playground_enabled: bool = False
-    invoice_bucket: str = ""
+    invoice_playground_enabled: bool = True
+    invoice_bucket: str = "work-511514-vyaparsetu-invoices"
     invoice_demo_token: SecretStr | None = None
     invoice_demo_merchant_id: str = "demo-merchant-00"
-    invoice_gemini_model: str = "gemini-3.5-flash-lite"
+    invoice_gemini_model: str = "gemini-2.5-flash"
     invoice_gemini_location: str = "global"
     pricing_po_tolerance_bps: int = Field(default=1000, ge=0, le=10_000)
     pricing_discount_review_bps: int = Field(default=500, ge=0, le=10_000)
     invoice_gcp_project: str = "work-511514"
+    sarvam_api_key: SecretStr | None = None
 
 
 @lru_cache

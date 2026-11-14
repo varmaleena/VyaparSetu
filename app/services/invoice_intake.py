@@ -83,9 +83,14 @@ def unavailable(code: str) -> InvoiceIntakeResult:
 
 
 def create_invoice_intake(settings: Settings) -> InvoiceIntake:
-    bucket = gcs.Client(project=settings.invoice_gcp_project).bucket(
-        settings.invoice_bucket
-    )
+    bucket = None
+    try:
+        if settings.invoice_bucket:
+            bucket = gcs.Client(project=settings.invoice_gcp_project).bucket(
+                settings.invoice_bucket
+            )
+    except Exception:
+        logger.info("Using local invoice storage adapter for sandbox/demo.")
     return InvoiceIntake(
         InvoiceStorage(bucket), InvoiceRepository(create_database_engine())
     )
