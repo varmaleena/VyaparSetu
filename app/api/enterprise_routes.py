@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import asyncio
 import base64
 import hashlib
 import json
 import logging
+import os
 import re
 import time
 from typing import Any
@@ -448,9 +450,15 @@ def extract_invoice_document(raw_bytes: bytes, file_name: str | None = None) -> 
                 break
 
     # 5. Parse Invoice Number
-    inv_match = re.search(r'(?:Invoice\s*No|Inv\s*No|Invoice|Bill\s*No)[\s:]*([A-Za-z0-9_-]+)', full_text, re.IGNORECASE)
+    inv_match = re.search(
+        r'(?:Invoice\s*(?:No|Num|Number|#)|Inv\s*No|Invoice\s*ID|Bill\s*#)[\s.:]*([A-Za-z0-9_-]+)',
+        full_text,
+        re.IGNORECASE,
+    )
     if inv_match:
-        extracted["invoice_number"] = inv_match.group(1).strip()
+        val = inv_match.group(1).strip()
+        if val.lower() not in {"to", "date", "due", "total", "subtotal", "tax"}:
+            extracted["invoice_number"] = val
 
     # 6. Parse Total Amount
     total_val = None
@@ -517,6 +525,13 @@ async def process_invoice_upload(req: ProcessInvoiceRequest) -> dict[str, Any]:
 
             # Step 1: RapidOCR & PyPDF text extraction (100% reliable local OCR)
             ocr_data = extract_invoice_document(raw_bytes, req.file_name)
+
+            if not ocr_data.get("total_amount") and not req.total_amount:
+                raise HTTPException(
+                    status_code=422,
+                    detail="Could not detect invoice total amount from the uploaded document. Please upload a clear photo or PDF.",
+                )
+
             if ocr_data.get("supplier_name"):
                 supplier_name = ocr_data["supplier_name"]
             if ocr_data.get("supplier_gstin"):
@@ -530,16 +545,18 @@ async def process_invoice_upload(req: ProcessInvoiceRequest) -> dict[str, Any]:
             if ocr_data.get("cash_discount_percent"):
                 disc_pct = ocr_data["cash_discount_percent"]
 
-            # Step 2: Also attempt Gemini Vision if configured
-            try:
-                mime = "application/pdf" if (req.file_name and req.file_name.lower().endswith(".pdf")) else "image/jpeg"
-                from google import genai
-                from google.genai import types
-                from app.config.settings import get_settings
-                cfg = get_settings()
-                model_name = cfg.invoice_gemini_model or "gemini-2.5-flash"
-                client = genai.Client()
-                prompt = """Analyze this Indian commercial supplier invoice.
+            # Step 2: Attempt Gemini Vision only if local OCR is incomplete and API key is present
+            if not (ocr_data.get("supplier_name") and ocr_data.get("total_amount") and ocr_data.get("supplier_gstin")):
+                if os.environ.get("GEMINI_API_KEY"):
+                    try:
+                        mime = "application/pdf" if (req.file_name and req.file_name.lower().endswith(".pdf")) else "image/jpeg"
+                        from google import genai
+                        from google.genai import types
+                        from app.config.settings import get_settings
+                        cfg = get_settings()
+                        model_name = cfg.invoice_gemini_model or "gemini-2.5-flash"
+                        client = genai.Client()
+                        prompt = """Analyze this Indian commercial supplier invoice.
 Extract and return a valid JSON object with:
 - "supplier_name": str
 - "supplier_gstin": str
@@ -549,37 +566,40 @@ Extract and return a valid JSON object with:
 - "tenor_days": int
 Return only raw JSON.
 """
-                resp = await client.aio.models.generate_content(
-                    model=model_name,
-                    contents=[
-                        types.Content(
-                            role="user",
-                            parts=[
-                                types.Part.from_text(text=prompt),
-                                types.Part.from_bytes(data=raw_bytes, mime_type=mime),
+                        coro = client.aio.models.generate_content(
+                            model=model_name,
+                            contents=[
+                                types.Content(
+                                    role="user",
+                                    parts=[
+                                        types.Part.from_text(text=prompt),
+                                        types.Part.from_bytes(data=raw_bytes, mime_type=mime),
+                                    ],
+                                )
                             ],
+                            config=types.GenerateContentConfig(
+                                response_mime_type="application/json",
+                                temperature=0.0,
+                            ),
                         )
-                    ],
-                    config=types.GenerateContentConfig(
-                        response_mime_type="application/json",
-                        temperature=0.0,
-                    ),
-                )
-                extracted = json.loads(resp.text)
-                if extracted.get("supplier_name"):
-                    supplier_name = str(extracted["supplier_name"])
-                if extracted.get("supplier_gstin"):
-                    gstin = str(extracted["supplier_gstin"]).strip().upper()
-                if extracted.get("invoice_number"):
-                    inv_num = str(extracted["invoice_number"])
-                if extracted.get("total_amount"):
-                    inv_amt = int(round(float(extracted["total_amount"])))
-                if extracted.get("cash_discount_percent"):
-                    disc_pct = float(extracted["cash_discount_percent"])
-                if extracted.get("tenor_days"):
-                    tenor_days = int(extracted["tenor_days"])
-            except Exception as gemini_err:
-                logger.info(f"Gemini vision direct extraction note (using RapidOCR): {gemini_err}")
+                        resp = await asyncio.wait_for(coro, timeout=2.0)
+                        extracted = json.loads(resp.text)
+                        if extracted.get("supplier_name"):
+                            supplier_name = str(extracted["supplier_name"])
+                        if extracted.get("supplier_gstin"):
+                            gstin = str(extracted["supplier_gstin"]).strip().upper()
+                        if extracted.get("invoice_number"):
+                            inv_num = str(extracted["invoice_number"])
+                        if extracted.get("total_amount"):
+                            inv_amt = int(round(float(extracted["total_amount"])))
+                        if extracted.get("cash_discount_percent"):
+                            disc_pct = float(extracted["cash_discount_percent"])
+                        if extracted.get("tenor_days"):
+                            tenor_days = int(extracted["tenor_days"])
+                    except Exception as gemini_err:
+                        logger.info(f"Gemini vision direct extraction note (using RapidOCR): {gemini_err}")
+        except HTTPException:
+            raise
         except Exception as e:
             logger.warning(f"File decoding error: {e}")
 

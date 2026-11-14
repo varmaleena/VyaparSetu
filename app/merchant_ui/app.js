@@ -795,14 +795,18 @@ window.processSelectedFile = async function (context = 'home') {
           file_bytes_base64: base64Data,
         })
       });
-      if (!res.ok) throw new Error('Invoice processing pipeline failed');
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.detail || 'Invoice processing failed. Please upload a clearer copy.');
+      }
       scenarioData = await res.json();
+      window.activeUploadedInvoice = scenarioData;
 
       renderProcessedInvoice(scenarioData);
-      showToast(`Gemini extraction complete: ${scenarioData?.invoice?.supplier_name || 'Bill extracted'}`);
+      showToast(`Extraction complete: ${scenarioData?.invoice?.supplier_name || 'Bill extracted'} (${money(scenarioData?.invoice?.total_amount)})`);
     } catch (err) {
       console.error(err);
-      showToast(`Error: ${err.message}`);
+      showToast(`${err.message}`);
     }
   };
   reader.readAsDataURL(currentSelectedFile);
