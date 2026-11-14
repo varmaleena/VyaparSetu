@@ -9,6 +9,7 @@ let streamSpeedMs = 2000;
 let agentGraphData = null;
 let selectedNodeId = 'intake';
 let currentAudioPlayer = null;
+let currentSelectedFile = null;
 
 // Currency Formatter
 function money(amt) {
@@ -66,18 +67,15 @@ const panelTitles = {
 };
 
 window.switchWorkspacePanel = function(panelId) {
-  // Hide all panels
   document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
   const target = document.getElementById(panelId);
   if (target) target.classList.add('active');
 
-  // Update topbar title
   const titleEl = document.getElementById('current-stage-title');
   if (titleEl && panelTitles[panelId]) {
     titleEl.textContent = panelTitles[panelId];
   }
 
-  // Update active sidebar item
   document.querySelectorAll('.side-nav-item').forEach(btn => btn.classList.remove('active'));
   const navIdMap = {
     'panel-decisioning': 'nav-item-decisioning',
@@ -132,9 +130,9 @@ window.loadScenario = async function(key) {
 
   const tag = document.getElementById('active-invoice-tag');
   if (tag) {
-    if (key === 'clean_bill_approve_full') tag.textContent = 'Sri Balaji Distributors (₹40,000 · Clean Bill)';
-    else if (key === 'weaker_merchant_partial') tag.textContent = 'Sri Balaji Distributors (₹40,000 · Constrained Kirana)';
-    else tag.textContent = 'Unverified Bill (Invalid GSTIN)';
+    if (key === 'clean_bill_approve_full') tag.textContent = 'Sri Balaji Distributors (₹40,000 · 3% off)';
+    else if (key === 'weaker_merchant_partial') tag.textContent = 'Sri Balaji Distributors (₹40,000 · Constrained cash flow)';
+    else tag.textContent = 'Unverified supplier bill — Invalid GSTIN';
   }
 
   showToast(`Running Google ADK Agent Pipeline...`);
@@ -173,7 +171,7 @@ window.loadScenario = async function(key) {
     setTimeout(() => {
       renderProcessedInvoice(scenarioData);
       showToast(`ADK Workflow Complete: ${scenarioData.decision.status}`);
-    }, 800);
+    }, 600);
   } catch (err) {
     console.error(err);
     showToast(`Error: ${err.message}`);
@@ -342,7 +340,6 @@ window.playVoiceAudio = async function() {
       await currentAudioPlayer.play();
       showToast(`Playing Sarvam AI Bulbul v1 (${currentLanguage.toUpperCase()})`);
     } else {
-      // Fallback to browser SpeechSynthesis
       speakBrowserUtterance(scriptText);
       setTimeout(() => {
         if (waveform) waveform.classList.remove('waveform-active');
@@ -350,7 +347,7 @@ window.playVoiceAudio = async function() {
       if (!apiKey) {
         showToast('Playing browser voice. Add your Sarvam API Key in Settings to use your 500 credits!');
       } else {
-        showToast('Sarvam TTS returned fallback; playing via browser synthesis.');
+        showToast('Sarvam TTS fallback: playing via browser speech synthesis.');
       }
     }
   } catch (err) {
@@ -442,7 +439,6 @@ window.confirmConsent = async function(utterance) {
     const consentRes = await res.json();
 
     if (consentRes.valid) {
-      // Disburse payment directly to payee
       const payRes = await fetch('/api/payments/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -462,7 +458,6 @@ window.confirmConsent = async function(utterance) {
       });
       const payment = await payRes.json();
 
-      // Show receipt card & move to step 5 panel
       window.switchWorkspacePanel('panel-repayment');
 
       const card = document.getElementById('payment-success-card');
@@ -476,7 +471,6 @@ window.confirmConsent = async function(utterance) {
 
       showToast(`Disbursal confirmed. Ref: ${payment.payment_reference}`, 5000);
 
-      // Activate PaymentExecution node on graph
       const payNode = document.getElementById('node-payment_exec');
       if (payNode) payNode.classList.add('active');
 
@@ -766,8 +760,6 @@ document.getElementById('chat-input')?.addEventListener('keydown', (e) => {
 // =========================================================================
 // 12. FILE UPLOAD & REAL GEMINI EXTRACTION HANDLERS
 // =========================================================================
-let currentSelectedFile = null;
-
 function handleFileSelection(file, context = 'home') {
   if (!file) return;
   currentSelectedFile = file;
@@ -790,11 +782,6 @@ window.processSelectedFile = async function(context = 'home') {
   showToast(`Scanning "${currentSelectedFile.name}" with Gemini 2.5 Vision...`);
   window.navToView('workspace', 'panel-decisioning');
 
-  // Progress tag
-  const stepTag = document.getElementById('merchant-flow-step-tag');
-  if (stepTag) stepTag.textContent = 'Step 2: Gemini Vision Extraction...';
-
-  // Read file as base64
   const reader = new FileReader();
   reader.onload = async function(e) {
     const base64Data = e.target.result.split(',')[1];
@@ -826,20 +813,25 @@ document.getElementById('home-file-input')?.addEventListener('change', (e) => {
 });
 
 document.getElementById('workspace-file-input')?.addEventListener('change', (e) => {
-  if (e.target.files && e.target.files.length > 0) handleFileSelection(e.target.files[0], 'home');
+  if (e.target.files && e.target.files.length > 0) {
+    handleFileSelection(e.target.files[0], 'home');
+    window.processSelectedFile('home');
+  }
 });
 
 // =========================================================================
 // 13. BOOTSTRAP INITIAL STATE
 // =========================================================================
 window.addEventListener('DOMContentLoaded', () => {
-  // Restore saved Sarvam key if exists
   const savedKey = localStorage.getItem('sarvam_api_key');
   const keyInput = document.getElementById('sarvam-api-key-input');
   if (keyInput && savedKey) {
     keyInput.value = savedKey;
   }
 
-  // Pre-load default standard bill for ready inspection
+  // Pre-load default standard bill for ready inspection in workspace
   window.loadScenario('clean_bill_approve_full');
+
+  // ALWAYS start on public homepage as requested
+  window.navToView('home');
 });
