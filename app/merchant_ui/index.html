@@ -10,8 +10,8 @@
   <link
     href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="/merchant/assets/style.css?v=35">
-  <script type="module" src="/merchant/assets/app.js?v=35"></script>
+  <link rel="stylesheet" href="/merchant/assets/style.css?v=43">
+  <script type="module" src="/merchant/assets/app.js?v=64"></script>
 </head>
 
 <body>
@@ -266,20 +266,23 @@
       <!-- Navigation Section 2: Support & Governance -->
       <div class="nav-group-label">SUPPORT &amp; GOVERNANCE</div>
       <nav class="sidebar-nav">
+        <details>
+          <summary class="nav-group-label">Operator tools</summary>
         <button class="side-nav-item" id="nav-item-blockchain" onclick="window.switchWorkspacePanel('panel-blockchain')">
           <span class="nav-icon">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           </span>
-          <span>Audit Blockchain</span>
+          <span>Audit Ledger</span>
         </button>
 
         <button class="side-nav-item" id="nav-item-risk" onclick="window.switchWorkspacePanel('panel-risk')">
           <span class="nav-icon">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
           </span>
-          <span>Portfolio Risk</span>
+          <span>Cash-flow Stress Test</span>
         </button>
 
+        </details>
         <button class="side-nav-item" id="nav-item-policy" onclick="window.switchWorkspacePanel('panel-policy')">
           <span class="nav-icon">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -315,7 +318,7 @@
           <!-- Sarvam AI Voice Indicator Pill -->
           <div class="sarvam-status-pill" onclick="window.switchWorkspacePanel('panel-settings')">
             <span class="sarvam-dot"></span>
-            <span>Sarvam AI 500 Credits Active</span>
+            <span>Sarvam AI Voice</span>
           </div>
 
           <!-- Language Selector -->
@@ -364,6 +367,7 @@
           </div>
 
           <!-- STEP 2: Extraction & Supplier Verification -->
+          <div class="glass-solid card" id="invoice-processing-status" role="status" hidden></div>
           <div class="glass-solid card" id="card-step-verification" style="margin-bottom: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
               <span class="card-label" style="margin: 0;">STEP 2 &middot; GEMINI VISION EXTRACTION &amp; GSTIN VERIFICATION</span>
@@ -393,7 +397,7 @@
           <!-- STEP 3: Underwriting & Savings Calculation -->
           <div class="glass card decision-card" id="card-step-underwriting">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span class="card-label" style="margin: 0;">STEP 3 &middot; P20 CASHFLOW UNDERWRITING &amp; ARBITRAGE</span>
+              <span class="card-label" id="decision-step-label" style="margin: 0;">STEP 3 &middot; P20 CASHFLOW UNDERWRITING &amp; ARBITRAGE</span>
               <span class="verdict-pill approve" id="decision-verdict-badge">APPROVE_FULL</span>
             </div>
 
@@ -408,23 +412,29 @@
                 <div class="arb-label">Original Invoice Amount</div>
                 <div class="arb-val" id="arb-invoice-amt">—</div>
               </div>
+              <div class="arb-cell">
+                <div class="arb-label">Original Payment Due Date</div>
+                <div class="arb-val" id="arb-invoice-due">—</div>
+                <div class="arb-label" id="arb-invoice-countdown"></div>
+              </div>
               <div class="arb-cell highlight">
                 <div class="arb-label">Prompt Cash Discount</div>
                 <div class="arb-val c-green" id="arb-discount-val">—</div>
+                <div id="arb-discount-terms" hidden></div>
               </div>
-              <div class="arb-cell">
+              <div class="arb-cell" data-legacy-financing>
                 <div class="arb-label">Net Disbursed to Supplier</div>
                 <div class="arb-val" id="arb-pay-amt">—</div>
               </div>
-              <div class="arb-cell">
+              <div class="arb-cell" data-legacy-financing>
                 <div class="arb-label">Financing Fee (20 Days)</div>
                 <div class="arb-val c-accent" id="arb-interest-cost">—</div>
               </div>
-              <div class="arb-cell highlight">
+              <div class="arb-cell highlight" data-legacy-financing>
                 <div class="arb-label">Net Merchant Profit</div>
                 <div class="arb-val c-green" id="arb-net-benefit">—</div>
               </div>
-              <div class="arb-cell">
+              <div class="arb-cell" data-legacy-financing>
                 <div class="arb-label">Daily QR Repayment (EDI)</div>
                 <div class="arb-val c-accent" id="arb-daily-edi">—</div>
               </div>
@@ -443,6 +453,68 @@
             </div>
 
             <!-- Proceed to Soundbox Button -->
+            <section id="payment-options" hidden>
+              <h3>Compare your options</h3>
+              <dl class="payment-date-grid" id="invoice-date-cards">
+                <div id="qr-date-card" hidden>
+                  <dt>Estimated funds available</dt>
+                  <dd id="qr-coverage-date"></dd>
+                  <dd id="qr-coverage-summary"></dd>
+                </div>
+                <div id="discount-date-card" hidden>
+                  <dt>Discount ends</dt>
+                  <dd id="early-payment-date"></dd>
+                  <dd id="early-payment-summary"></dd>
+                </div>
+                <div>
+                  <dt>Original invoice due</dt>
+                  <dd id="payment-original-due"></dd>
+                  <dd id="payment-original-amount"></dd>
+                </div>
+              </dl>
+              <section id="qr-funding-breakdown" hidden>
+                <h4>Plan your supplier payment</h4>
+                <label class="qr-reserve-field">When would you like to pay?
+                  <input id="qr-payment-date" type="date">
+                </label>
+                <dl class="payment-date-grid">
+                  <div><dt>Expected QR funds by then</dt><dd id="qr-total-by-date"></dd></div>
+                  <div><dt>Expected QR inflow per day</dt><dd id="qr-daily-amount"></dd></div>
+                  <div><dt>Still needed</dt><dd id="qr-reserve-comparison"></dd></div>
+                </dl>
+                <p id="qr-date-terms"></p>
+                <label class="qr-reserve-field">Money to keep for your shop (₹)
+                  <input id="qr-shop-reserve" form="evaluate-payment-options" name="buffer" type="number" min="0" step="0.01" placeholder="0">
+                </label>
+                <details>
+                  <summary>See daily forecast and slower-sales estimate</summary>
+                  <p id="qr-funding-explanation"></p>
+                  <p id="qr-slower-sales"></p>
+                  <div class="table-wrap">
+                    <table>
+                      <thead><tr><th>Estimated available by</th><th>Projected QR inflow</th><th>Existing daily repayment</th><th>Left after repayment</th><th>Total projected so far</th></tr></thead>
+                      <tbody id="qr-forecast-rows"></tbody>
+                    </table>
+                  </div>
+                </details>
+              </section>
+              <p id="payment-options-note" aria-live="polite"></p>
+              <div id="payment-option-actions">
+                <button type="button" class="btn btn-primary" id="keep-invoice-terms">Keep original payment terms</button>
+                <button type="button" class="btn btn-soft" id="explore-early-payment" aria-controls="evaluate-payment-options" aria-expanded="false">Compare early-payment options</button>
+              </div>
+              <form id="evaluate-payment-options" hidden>
+                <label>Cash you can add (₹) <input placeholder="e.g. 15,000" name="cash" type="number" min="0" step="0.01"></label>
+                <button class="btn btn-soft" type="submit">Compare options</button>
+              </form>
+              <div id="payment-option-cards"></div>
+              <div class="card" id="payment-option-review" hidden>
+                <h4 id="payment-review-title"></h4>
+                <p id="payment-review-details"></p>
+                <button type="button" class="btn btn-primary" id="approve-payment-option" hidden>Approve selected option</button>
+                <a id="payment-business-loan" class="btn btn-primary" href="https://paytm.com/loans-credit-cards/business-loan/" target="_blank" rel="noopener noreferrer" hidden>Check Business Loan offers on Paytm</a>
+              </div>
+            </section>
             <button class="btn btn-primary btn-block btn-lg" id="btn-proceed-consent" onclick="window.switchWorkspacePanel('panel-soundbox')">
               Proceed to Soundbox 4.0 Voice Consent &rarr;
             </button>
@@ -453,6 +525,31 @@
         <!-- PANEL 2: SOUNDBOX 4.0 VOICE CONSENT (STEP 4)                      -->
         <!-- ================================================================= -->
         <section id="panel-soundbox" class="view-panel">
+                <div id="qr-savings-controls" class="glass-solid card" hidden>
+                  <h3 class="card-title">Your QR savings plan</h3>
+                  <p id="qr-plan-payment"></p>
+                  <dl class="payment-date-grid">
+                    <div><dt>Expected QR inflow</dt><dd id="qr-review-inflow"></dd></div>
+                    <div><dt>Set aside for this bill</dt><dd id="qr-review-deposit"></dd></div>
+                    <div><dt>Left for your shop</dt><dd id="qr-review-left"></dd></div>
+                  </dl>
+                  <p id="qr-review-day"></p>
+                  <details>
+                    <summary>Daily breakdown</summary>
+                    <div class="table-wrap"><table>
+                      <thead><tr><th>Available by</th><th>QR inflow</th><th>Set aside</th><th>Left for your shop</th><th>Total set aside</th></tr></thead>
+                      <tbody id="qr-review-rows"></tbody>
+                    </table></div>
+                  </details>
+                  <p class="qr-review-note">Simulation · Withdraw or cancel before payment.</p>
+                  <h4>Savings plan transcript</h4>
+                  <dl id="qr-plan-transcript" class="payment-date-grid"></dl>
+                  <div class="qr-transcript-actions">
+                  <button type="button" class="btn btn-soft" id="qr-plan-listen">Hear savings plan</button>
+                  <button type="button" class="btn btn-primary" id="qr-plan-confirm">Approve savings plan</button>
+                  </div>
+                  <p id="qr-plan-status" aria-live="polite"></p>
+                </div>
           <div class="glass-solid card" id="card-step-soundbox">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
               <div>
@@ -514,6 +611,18 @@
         <!-- PANEL 3: REPAYMENT ENGINE & SETTLEMENT STREAM (STEP 5)            -->
         <!-- ================================================================= -->
         <section id="panel-repayment" class="view-panel">
+          <div class="glass-solid card" id="qr-payment-monitor" hidden>
+            <h3>Scheduled supplier payment</h3>
+            <p id="qr-payment-summary"></p>
+            <p id="qr-payment-progress" aria-live="polite"></p>
+            <ul id="qr-payment-activity"></ul>
+                  <div id="qr-active-controls" hidden>
+                    <button type="button" class="btn btn-soft" id="qr-next-day">Simulate next settlement day</button>
+                    <label>Withdrawal (₹) <input id="qr-withdraw-amount" type="number" min="0" step="0.01"></label>
+                    <button type="button" class="btn btn-soft" id="qr-withdraw">Review withdrawal</button>
+                  </div>
+            <button type="button" class="btn btn-outline" id="qr-cancel-payment">Cancel scheduled payment</button>
+          </div>
           <div class="glass-solid card" id="card-step-repayment">
             <span class="card-label">STEP 5 &middot; DIRECT DISBURSAL &amp; DAILY QR RECOVERY</span>
 
@@ -611,15 +720,12 @@
 
                 <!-- Directed Edges -->
                 <g id="graph-edges-group">
-                  <line x1="80" y1="80" x2="220" y2="80" class="graph-edge" marker-end="url(#arrow)"/>
-                  <line x1="340" y1="80" x2="480" y2="80" class="graph-edge" marker-end="url(#arrow)"/>
-                  <line x1="600" y1="80" x2="680" y2="170" class="graph-edge" marker-end="url(#arrow)"/>
-                  <line x1="680" y1="210" x2="600" y2="300" class="graph-edge" marker-end="url(#arrow)"/>
-                  <line x1="480" y1="300" x2="340" y2="300" class="graph-edge" marker-end="url(#arrow)"/>
-                  <line x1="220" y1="300" x2="80" y2="300" class="graph-edge" marker-end="url(#arrow)"/>
-                  <line x1="80" y1="340" x2="80" y2="430" class="graph-edge" marker-end="url(#arrow)"/>
-                  <line x1="140" y1="450" x2="280" y2="450" class="graph-edge" marker-end="url(#arrow)"/>
-                  <line x1="400" y1="450" x2="540" y2="450" class="graph-edge" marker-end="url(#arrow)"/>
+                  <line x1="150" y1="80" x2="210" y2="80" class="graph-edge" marker-end="url(#arrow)"/>
+                  <line x1="350" y1="80" x2="470" y2="80" class="graph-edge" marker-end="url(#arrow)"/>
+                  <line x1="540" y1="110" x2="540" y2="200" class="graph-edge" marker-end="url(#arrow)"/>
+                  <line x1="470" y1="230" x2="350" y2="230" class="graph-edge" marker-end="url(#arrow)"/>
+                  <line x1="210" y1="230" x2="150" y2="230" class="graph-edge" marker-end="url(#arrow)"/>
+                  <line x1="85" y1="260" x2="85" y2="350" class="graph-edge" marker-end="url(#arrow)"/>
                 </g>
 
                 <!-- Agent Nodes -->
@@ -627,72 +733,54 @@
                   <!-- Node 1: Intake -->
                   <g class="agent-node" id="node-intake" transform="translate(20, 50)" onclick="window.inspectAgentNode('intake')">
                     <rect width="130" height="60" rx="8" fill="#fff" stroke="rgba(235, 201, 190, 0.9)" stroke-width="1.5"/>
-                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">InvoiceIntake</text>
-                    <text x="14" y="42" font-size="9" fill="#B5A59E">Document Verification</text>
+                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">Invoice intake</text>
+                    <text x="14" y="42" font-size="9" fill="#B5A59E">File upload</text>
                   </g>
 
                   <!-- Node 2: Vision OCR -->
                   <g class="agent-node" id="node-vision" transform="translate(210, 50)" onclick="window.inspectAgentNode('vision')">
                     <rect width="140" height="60" rx="8" fill="#fff" stroke="rgba(235, 201, 190, 0.9)" stroke-width="1.5"/>
-                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">GeminiVisionAgent</text>
-                    <text x="14" y="42" font-size="9" fill="#B5A59E">gemini-2.5-flash</text>
+                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">Document Extraction</text>
+                    <text x="14" y="42" font-size="9" fill="#B5A59E">Local OCR / Gemini</text>
                   </g>
 
                   <!-- Node 3: Supplier Risk -->
                   <g class="agent-node" id="node-supplier_risk" transform="translate(470, 50)" onclick="window.inspectAgentNode('supplier_risk')">
                     <rect width="140" height="60" rx="8" fill="#fff" stroke="rgba(235, 201, 190, 0.9)" stroke-width="1.5"/>
-                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">SupplierRiskAgent</text>
+                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">Supplier checksum</text>
                     <text x="14" y="42" font-size="9" fill="#B5A59E">GSTIN Modulo-36</text>
                   </g>
 
-                  <!-- Node 4: Duplicate Fraud -->
-                  <g class="agent-node" id="node-duplicate_fraud" transform="translate(620, 160)" onclick="window.inspectAgentNode('duplicate_fraud')">
-                    <rect width="130" height="60" rx="8" fill="#fff" stroke="rgba(235, 201, 190, 0.9)" stroke-width="1.5"/>
-                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">DuplicateFraudAgent</text>
-                    <text x="14" y="42" font-size="9" fill="#B5A59E">SHA-256 Fingerprint</text>
-                  </g>
 
                   <!-- Node 5: Cashflow Sizing -->
-                  <g class="agent-node" id="node-cashflow_p20" transform="translate(470, 270)" onclick="window.inspectAgentNode('cashflow_p20')">
+                  <g class="agent-node" id="node-cashflow_p20" transform="translate(470, 200)" onclick="window.inspectAgentNode('cashflow_p20')">
                     <rect width="140" height="60" rx="8" fill="#fff" stroke="rgba(235, 201, 190, 0.9)" stroke-width="1.5"/>
-                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">CashflowSizingAgent</text>
-                    <text x="14" y="42" font-size="9" fill="#B5A59E">P20 Empirical Quantile</text>
+                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">QR cash-flow forecast</text>
+                    <text x="14" y="42" font-size="9" fill="#B5A59E">Simulated merchant history</text>
                   </g>
 
-                  <!-- Node 6: Arbitrage -->
-                  <g class="agent-node" id="node-arbitrage" transform="translate(210, 270)" onclick="window.inspectAgentNode('arbitrage')">
-                    <rect width="140" height="60" rx="8" fill="#fff" stroke="rgba(235, 201, 190, 0.9)" stroke-width="1.5"/>
-                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">DiscountArbitrage</text>
-                    <text x="14" y="42" font-size="9" fill="#B5A59E">Math Profit Delta</text>
-                  </g>
 
                   <!-- Node 7: Policy -->
-                  <g class="agent-node" id="node-policy" transform="translate(20, 270)" onclick="window.inspectAgentNode('policy')">
+                  <g class="agent-node" id="node-policy" transform="translate(210, 200)" onclick="window.inspectAgentNode('policy')">
                     <rect width="130" height="60" rx="8" fill="#fff" stroke="rgba(235, 201, 190, 0.9)" stroke-width="1.5"/>
-                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">PolicyDecisionAgent</text>
-                    <text x="14" y="42" font-size="9" fill="#B5A59E">Decision Matrix</text>
+                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">Payment Options</text>
+                    <text x="14" y="42" font-size="9" fill="#B5A59E">Compare payment choices</text>
                   </g>
 
                   <!-- Node 8: Soundbox Voice -->
-                  <g class="agent-node" id="node-voice_consent" transform="translate(20, 420)" onclick="window.inspectAgentNode('voice_consent')">
+                  <g class="agent-node" id="node-voice_consent" transform="translate(20, 200)" onclick="window.inspectAgentNode('voice_consent')">
                     <rect width="130" height="60" rx="8" fill="#fff" stroke="rgba(235, 201, 190, 0.9)" stroke-width="1.5"/>
-                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">VoiceConsentAgent</text>
-                    <text x="14" y="42" font-size="9" fill="#B5A59E">Soundbox 4.0 Hash Lock</text>
+                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">Merchant Review</text>
+                    <text x="14" y="42" font-size="9" fill="#B5A59E">Await merchant action</text>
                   </g>
 
                   <!-- Node 9: Payment Execution -->
-                  <g class="agent-node" id="node-payment_exec" transform="translate(270, 420)" onclick="window.inspectAgentNode('payment_exec')">
+                  <g class="agent-node" id="node-payment_exec" transform="translate(20, 350)" onclick="window.inspectAgentNode('payment_exec')">
                     <rect width="140" height="60" rx="8" fill="#fff" stroke="rgba(235, 201, 190, 0.9)" stroke-width="1.5"/>
-                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">PaymentExecution</text>
-                    <text x="14" y="42" font-size="9" fill="#B5A59E">Idempotent Payout Rail</text>
+                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">Merchant Outcome</text>
+                    <text x="14" y="42" font-size="9" fill="#B5A59E">Terms, payment or handoff</text>
                   </g>
 
-                  <!-- Node 10: Settlement Loop -->
-                  <g class="agent-node" id="node-settlement_loop" transform="translate(530, 420)" onclick="window.inspectAgentNode('settlement_loop')">
-                    <rect width="140" height="60" rx="8" fill="#fff" stroke="rgba(235, 201, 190, 0.9)" stroke-width="1.5"/>
-                    <text x="14" y="24" font-size="11" font-weight="600" fill="#4A4543">SettlementLoopAgent</text>
-                    <text x="14" y="42" font-size="9" fill="#B5A59E">Daily QR EDI Recovery</text>
-                  </g>
                 </g>
               </svg>
             </div>
@@ -835,50 +923,40 @@
             </div>
 
             <div style="display: flex; gap: 8px;">
-              <input type="text" id="chat-input" placeholder="e.g. Why was the daily EDI capped at 25% of P20 cashflow?" style="flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(235, 201, 190, 0.8); font: inherit; font-size: 0.86rem; background: #fff;">
+              <input type="text" id="chat-input" placeholder="e.g. Can my QR sales cover this bill?" style="flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(235, 201, 190, 0.8); font: inherit; font-size: 0.86rem; background: #fff;">
               <button class="btn btn-primary" onclick="window.sendChatMessage()">Ask Agent</button>
             </div>
           </div>
         </section>
 
         <!-- ================================================================= -->
-        <!-- PANEL 8: VOICE & AI SETTINGS (SARVAM AI 500 CREDITS CONFIG)       -->
+        <!-- PANEL 8: VOICE & AI SETTINGS (SARVAM AI CONFIG)       -->
         <!-- ================================================================= -->
         <section id="panel-settings" class="view-panel">
           <div class="glass-solid card">
-            <span class="card-label">SARVAM AI INTEGRATION &middot; 500 CREDITS ACTIVE</span>
+            <span class="card-label">SARVAM AI INTEGRATION</span>
             <h2 class="sec-title">Voice &amp; AI Engine Configuration</h2>
             <p class="sec-sub">Manage your Sarvam AI Text-to-Speech API credentials and voice synthesis options for the Paytm Soundbox 4.0.</p>
 
             <div style="background: rgba(139, 74, 54, 0.06); border: 1px solid rgba(139, 74, 54, 0.15); border-radius: 10px; padding: 16px; margin-bottom: 22px;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                  <strong style="color: var(--primary-btn); font-size: 0.94rem;">Active Plan: 500 Sarvam Credits</strong>
-                  <p style="font-size: 0.8rem; color: var(--text-body); margin: 2px 0 0;">Model: <code>bulbul:v1</code> &middot; Supported: Telugu (<code>te-IN</code>), Hindi (<code>hi-IN</code>), English (<code>en-IN</code>)</p>
+                  <strong style="color: var(--primary-btn); font-size: 0.94rem;">Sarvam AI Speech</strong>
+                  <p style="font-size: 0.8rem; color: var(--text-body); margin: 2px 0 0;">Model: <code>bulbul:v3</code> &middot; Supported: Telugu (<code>te-IN</code>), Hindi (<code>hi-IN</code>), English (<code>en-IN</code>)</p>
                 </div>
-                <span class="badge badge-green">Ready to Synthesize</span>
               </div>
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 16px; max-width: 540px;">
-              <div>
-                <label style="display: block; font-size: 0.82rem; font-weight: 600; color: var(--heading); margin-bottom: 6px;">
-                  Sarvam API Subscription Key:
-                </label>
-                <div style="display: flex; gap: 8px;">
-                  <input type="password" id="sarvam-api-key-input" placeholder="Paste your Sarvam API Key here" style="flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(235, 201, 190, 0.8); font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; background: #fff;">
-                  <button class="btn btn-primary btn-sm" onclick="window.saveSarvamKey()">Save Key</button>
-                </div>
-                <small style="color: var(--text-muted); display: block; margin-top: 4px;">Key is stored locally in your browser session for direct TTS calls.</small>
-              </div>
+              <p>Set <code>SARVAM_API_KEY</code> in the server's <code>.env</code> file and restart the app.</p>
 
               <div>
                 <label style="display: block; font-size: 0.82rem; font-weight: 600; color: var(--heading); margin-bottom: 6px;">
                   Voice Speaker Persona:
                 </label>
                 <select id="sarvam-speaker-select" style="width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid rgba(235, 201, 190, 0.8); font: inherit; background: #fff;">
-                  <option value="meera" selected>Meera (Female &middot; Clear Indian Enunciation)</option>
-                  <option value="arvind">Arvind (Male &middot; Deep Trust Tone)</option>
+                  <option value="priya" selected>Priya</option>
+                  <option value="shubh">Shubh</option>
                 </select>
               </div>
 

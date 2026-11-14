@@ -826,6 +826,49 @@ tr:hover td { background: rgba(255, 255, 255, 0.3); }
   gap: 12px;
 }
 
+.lang-sel {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--primary-btn);
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.45);
+  color: var(--primary-btn);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lang-sel:hover {
+  background-color: rgba(255, 255, 255, 0.75);
+}
+
+.lang-sel:focus-visible {
+  outline: 2px solid var(--primary-btn);
+  outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  .home-nav {
+    height: auto;
+    min-height: 72px;
+    padding-block: 12px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .home-nav-links {
+    order: 1;
+    flex-basis: 100%;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+  }
+
+  .home-nav-actions {
+    flex-wrap: wrap;
+  }
+}
+
 .home-hero-wrap {
   max-width: 1240px;
   margin: 0 auto;
@@ -1110,4 +1153,216 @@ tr:hover td { background: rgba(255, 255, 255, 0.3); }
 
 .side-nav-item.super-agent-pill.active::before {
   background: var(--blue);
+}
+
+#evaluate-payment-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+#evaluate-payment-options[hidden],
+#payment-option-review[hidden],
+#approve-payment-option[hidden],
+#payment-business-loan[hidden] {
+  display: none;
+}
+
+#evaluate-payment-options label {
+  display: grid;
+  gap: 6px;
+  flex: 0 1 200px;
+  min-width: 0;
+  color: var(--heading);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+#evaluate-payment-options input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid rgba(139, 74, 54, 0.35);
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.65);
+  color: var(--heading);
+  font: inherit;
+}
+
+#evaluate-payment-options input:focus-visible {
+  outline: 2px solid var(--primary-btn);
+  outline-offset: 2px;
+}
+
+#payment-option-cards {
+  display: grid;
+  gap: 12px;
+}
+
+#payment-option-review {
+  margin-top: 12px;
+}
+
+#payment-option-review .btn {
+  margin-top: 12px;
+}
+
+#payment-option-cards .payment-option-selected {
+  border-color: var(--primary-btn);
+}
+
+@media (max-width: 600px) {
+  #evaluate-payment-options label {
+    flex: 1 1 100%;
+  }
+}
+
+.agent-node.inspected rect {
+  stroke-width: 3px;
+}
+.agent-node[data-status="RUNNING"] rect {
+  stroke: var(--primary-btn);
+  animation: workflow-pulse 1.2s ease-in-out infinite alternate;
+}
+.agent-node[data-status="COMPLETED"] rect {
+  stroke: var(--green);
+}
+.agent-node[data-status="BLOCKED"] rect,
+.agent-node[data-status="FAILED"] rect {
+  stroke: var(--red);
+}
+.agent-node[data-status="WAITING"] rect,
+.agent-node[data-status="HANDED OFF"] rect {
+  stroke: var(--primary-btn);
+  stroke-dasharray: 5 3;
+}
+@keyframes workflow-pulse {
+  from { stroke-width: 2px; }
+  to { stroke-width: 4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .agent-node[data-status="RUNNING"] rect { animation: none; }
+}
+
+#payment-options {
+  color: #000;
+}
+
+#payment-options :is(h3, h4, p, label, input, .btn-soft) {
+  color: inherit;
+}
+
+.payment-date-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 12px;
+  margin: 14px 0 16px;
+}
+
+.payment-date-grid > div {
+  padding: 12px 14px;
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.payment-date-grid dt,
+.payment-date-grid dd + dd {
+  font-size: 0.82rem;
+}
+
+.payment-date-grid dd {
+  margin: 4px 0 0;
+}
+
+.payment-date-grid dd:first-of-type {
+  font-weight: 700;
+}
+
+#payment-options-note {
+  margin-bottom: 12px;
+}
+
+#qr-funding-breakdown {
+  margin: 0 0 16px;
+  padding: 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+#qr-funding-breakdown details {
+  margin-top: 8px;
+}
+
+#qr-funding-breakdown :is(th, td) {
+  color: inherit;
+}
+
+#qr-funding-breakdown {
+  padding: 18px;
+}
+
+.qr-forecast-highlight,
+.qr-reserve-field {
+  display: grid;
+  gap: 4px;
+  margin: 12px 0;
+}
+
+.qr-forecast-highlight strong {
+  font-size: 1.25rem;
+}
+
+.qr-reserve-field {
+  max-width: 300px;
+}
+
+.qr-reserve-field input {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid rgba(139, 74, 54, 0.35);
+  border-radius: 10px;
+  background: #fff;
+  font: inherit;
+}
+
+#qr-review-day,
+#qr-savings-controls .qr-review-note {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+#qr-savings-controls details {
+  margin: 12px 0;
+}
+
+#qr-savings-controls details summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+#qr-savings-controls .qr-review-note {
+  margin: 0 0 14px;
+}
+
+#qr-plan-transcript {
+  color: #000;
+}
+
+#qr-plan-transcript dt {
+  font-weight: 700;
+}
+
+#qr-plan-transcript dd:first-of-type {
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.qr-transcript-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }

@@ -74,7 +74,7 @@ def build_seed() -> dict[str, list[dict]]:
     settlements = []
     for i, merchant in enumerate(merchants):
         daily_base = (
-            25_000 if i == 0 else 4_500 if i == 1 else random.randint(6_000, 28_000)
+            6_000 if i == 0 else 4_500 if i == 1 else random.randint(6_000, 28_000)
         )
         for offset in range(1, 91):
             day = AS_OF - timedelta(days=offset)
